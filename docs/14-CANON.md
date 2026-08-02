@@ -134,13 +134,15 @@ Three things this touches:
   tracking that retargets mid-flight (D-046). **Basic-attack projectiles never retarget**
   — there are thousands of them, and giving each a tracking loop is a real frame cost for
   a benefit nobody would perceive.
+- **The correction budget is spent differently per delivery** (D-077). A projectile curves;
+  a **beam angles its emitter** so it stays a straight line from bow to target; a **wave
+  rotates its center axis** onto the target and spreads from there. Beams never bend.
+- **Nothing homes beyond `dis4`** (D-076).
 - **Spread also drove the visuals** — helix amplitude at 2 guns, fan angle at 3 (v0 `04`
   §4.4.4). Those now need fixed values, which is fine and arguably better: the helix reads
   as a signature rather than a setting.
-- **It overlaps the Assist Aim accessibility toggle** (`03` §3.2.6). Selling a purchasable
-  version of an accessibility feature needs care [OPEN]. Cleanest split: `homing` bends
-  the *projectile*, Assist Aim bends the *ship's heading*. Different mechanisms, no
-  awkwardness about paying for accessibility.
+- **Assist Aim is cut** (D-071), so the accessibility overlap dissolved rather than needing
+  a split. A player who wants forgiveness buys homing ranks.
 
 ### Basic attack vs ability
 
@@ -466,11 +468,17 @@ duration (line 32).
 | **Playfield** | The battle area. **1000 units wide** (D-024). | `PLAYFIELD_WIDTH` |
 | **Bow / Stern** | Front / back of a ship. | `bow`, `stern` |
 | **Port / Starboard** | Left / right, ship-relative. | `port`, `starboard` |
+| **Wingspan** | Port-to-starboard extent. The Valrune's is **100 units** (D-073). | `wingspan` |
+| **Fuselage** | Bow-to-stern extent. The Valrune's is **110 units**, so 55 either way from center. | `fuselage` |
 | **Heading** | The direction a ship faces. Distinct from travel — movement is screen-relative. | `heading` |
 | **Ready line** | **A full horizontal line**, not a point. | `READY_LINE_Y` |
-| **Radius band** | `r_short`, `r1`, `r2`, `r3`. A region **around** a point. | `r1` |
-| **Distance band** | `dis_short`, `dis1`–`dis4`. Reach **away from** a point. | `dis1` |
-| **Width band** | `w0`–`w3`. | `w1` |
+| **Radius band** | `r_short`, `r1`, `r2`, `r3`. A region **around** a point, measured **from center**. | `r1` |
+| **Distance band** | `dis_short`, `dis1`–`dis5`. Reach **away from** a point, measured **from the bow** (D-074). | `dis1` |
+| **Width band** | `w1`–`w4`, in wingspans. | `w1` |
+
+**Radii measure from center, distances from the bow.** A projectile spawns at the bow, so a
+distance is literally how far it travels. The near distance rungs are offset by the 55-unit
+half-fuselage so they finish flush with the matching radius ring.
 
 **Banned: `ground`.** Confirmed — it is space.
 
@@ -482,50 +490,44 @@ sideways — worse, and it would have made recall a repositioning tool rather th
 
 ### Band values
 
-**Radius and distance couple only at the short end**, then diverge:
+Numbers live in [`15-CONSTANTS.md`](15-CONSTANTS.md) §3–5. The short version:
 
-| Band | Value |
-|---|---|
-| `dis_short` | = `r_short` |
-| `dis1` | = `r1` |
-| `dis2` | Independent |
-| `dis3` | **Ready line to the top playfield border.** The natural full-screen reach. |
-| `dis4` | Beyond `dis3` — matters for angled shots that wrap, and for the open arena. |
+- **Radii** `r_short` 100, `r1` 150, `r2` 250, `r3` 400 — from center.
+- **Distances** `dis_short` 45, `dis1` 95, `dis2` 345, `dis3` 800, `dis4` 1600, `dis5` 2400
+  — from the bow. The first three land flush with `r_short`, `r1`, and `r3`.
+- **Widths** `w1` 50, `w2` 100, `w3` 200, `w4` 400 — half a wingspan, a wingspan, and a
+  wingspan plus 0.5 or 1.5 either side.
 
-Both ladders extend if content needs it. `dis3` being screen-derived is useful: it is the
-one band with a physical meaning rather than a tuned number.
+`w0` is deleted. A projectile's own width is not a band anybody authors against; it is
+`PROJECTILE_WIDTH` in entity sizes.
 
-**Widths are Valrune-relative**, which makes them self-documenting:
-
-| Band | Value |
-|---|---|
-| `w0` | A projectile's own width. No spread. |
-| `w1` | Half the Valrune's width. |
-| `w2` | The Valrune's full width. |
-| `w3` | Two Valrunes wide, plus half a Valrune beyond each side. |
-
-CRYO likely needs wider, given how short its reach is. Extend the ladder rather than
-special-casing.
+`dis4` keeps a physical meaning — ready line to the top of the action zone — which makes it
+the one rung anchored to something rather than tuned.
 
 ### Push, pull, and gravity
 
-**Your model is cleaner than mine and I am adopting it.** I had gravity "overriding"
-movement, which implies an arbitration rule. Yours has no arbitration at all:
-
-> **Gravity disables self-movement. Pull then becomes the entity's only movement.**
-
-Nothing competes, so nothing needs resolving.
+**Gravity disables self-movement. Pull then becomes the entity's only movement.** No
+arbitration rule, because nothing competes.
 
 | Term | Means | Code |
 |---|---|---|
 | **Push** | Displacement **away from** a source. Does not stop self-movement. | `push` |
-| **Pull** | Sustained movement **toward** a source. Does not stop self-movement. | `pull` |
+| **Pull** | Displacement **toward** a source. Does not stop self-movement. | `pull` |
 | **Gravity** | A **status** that disables self-movement. Pairs with pull. | `gravity` |
-| **Push/pull band** | A `(distance, time)` pair, banded like radii: `push_1`, `pull_2`. | `push_1` |
-| **Stop radius** | Where a pull stops pulling. | `pull_stop_radius` |
+| **Time class** | `t_snap`, `t_quick`, `t_steady`, `t_slow`. The only new ladder. | `t_quick` |
 
-Banding the `(distance, time)` pair keeps the "short speedy Forge knock" and the "slow
-heavy Void drag" as two named constants rather than four loose numbers per ability.
+**There are no `push_1` / `pull_2` band ids** (D-075). Banding a two-dimensional thing would
+have exploded, and letting each ability invent its own numbers would have made parity
+checking impossible. Instead each writes a pair composed from ladders that already exist:
+
+```
+push: { distance: <distance or radius band>, time: <time class> }
+pull: { distance: <distance or radius band>, time: <time class> }
+pull: { from: <radius band>, to: <radius band>, time: <time class> }
+```
+
+The third form is the gravity well — pull inward until the target is within the inner
+radius, then hold. That is what most gravity abilities actually want.
 
 **Pull needs a stop condition** — your case of "pull until within a radius, then hold."
 `pull_stop_radius: null` pulls all the way to the point; a value stops it at that ring

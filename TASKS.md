@@ -35,12 +35,18 @@ The gate is open. Phase 2 can proceed on vocabulary.
 - [x] Ladders respaced against a **count of real usage** in the spreadsheets:
       `r1` appears 51 times, `distance_3` is authored as "max distance"
 - [x] Resolved O-01, O-14 (Assist Aim cut), O-16 (letterbox), O-19 (ladder respaced)
-- [x] Bryan's review pass — `crit_chance` 1.0% → 4.0%, projectiles inherit 25% of ship
-      velocity, homing ceiling flagged for M0 (D-062 to D-072)
+- [x] Bryan's review pass — `crit_chance` 1.0% → 4.0% (D-062 to D-072)
+- [x] **Revision 3: geometry rescaled against a measured reference screenshot.** Valrune
+      100 × 110, all ladders respaced, `wingspan`/`fuselage` into canon, push/pull bands
+      deleted in favour of composed pairs, velocity inheritance cut, homing denominated per
+      unit travelled and bounded by `dis4` (D-073 to D-079)
+- [x] Resolved O-21 (clustering, split blind/aimed and measured) and O-23 (dissolved)
 
-Everything still open here is an **M0 measurement, not a desk decision** — `CLUSTERING`,
-Expanse size, `HOMING_BASE`, `VALRUNE_SPEED_BASE`, the homing ceiling, and the
-homing/inheritance interaction. Numbers are good enough to build the data model on.
+Everything still open is an **M0 measurement, not a desk decision** — Expanse size,
+`HOMING_BASE` and ceiling, `VALRUNE_SPEED_BASE`, and the 200-baddie performance claim.
+
+> **Carried into Phase 4:** baddie counts tripled, so every AoE ability is worth 6–14× what
+> the previous numbers implied. No authored damage value has been checked against this.
 
 ### 1c/1d — Statuses and ADRs ← **NEXT**
 

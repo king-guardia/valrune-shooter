@@ -43,8 +43,13 @@ If a constraint seems wrong, change the decision log first — never work around
 - **No balance numbers in code.** Everything lives in `data/*.json`.
 - **Flat values, not percentages.** The allowlist is closed: crit chance, crit damage,
   Overclock. Adding to it requires an ADR. *(D-014)*
-- **Geometry references bands, never raw numbers.** `r1`, `dis2`, `w1`, `push_1`,
-  `pull_2`. The playfield is 1000 units wide. *(D-024, D-054)*
+- **Geometry references bands, never raw numbers.** `r1`, `dis2`, `w1`, `t_quick`. The
+  playfield is 1000 units wide. *(D-024, D-054)*
+- **Radii measure from center, distances from the bow.** *(D-074)*
+- **Push and pull have no band ids.** Each writes `{ distance, time }` or
+  `{ from, to, time }`, composed from existing ladders. *(D-075)*
+- **Nothing homes beyond `dis4`**, and homing correction is denominated per unit travelled,
+  never per second. *(D-076)*
 - **Costs are arithmetic:** `base + step × (rank − 1)`. Never geometric.
 - **Maximum ability cooldown is 2 minutes.** *(D-023)*
 - **No upgrade, node, or ability increases credit gain.**

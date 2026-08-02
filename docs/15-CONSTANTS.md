@@ -1,6 +1,6 @@
 # 15 — Constants
 
-**Status: draft, revision 2 — awaiting Bryan's review.** Vocabulary is fixed by
+**Status: draft, revision 3 — geometry rescaled against a measured reference.** Vocabulary is fixed by
 [`14-CANON.md`](14-CANON.md); this file puts numbers on it.
 
 Every value is one of three kinds:
@@ -74,75 +74,141 @@ every band, and balance measured on one device would not hold on another.
 
 ## 2. Entity sizes
 
+Measured, not guessed: a reference screenshot at 400px screen width converts cleanly at
+**2.5 units per pixel**, and the ship read well at 40px.
+
 ```
-VALRUNE_WIDTH    = 80    Anchor — 8% of screen width
-BADDIE_MINION    = 64    Starting point
-BADDIE_ELITE     = 90    Starting point
-BADDIE_MINIBOSS  = 200   Starting point
-BADDIE_BOSS      = 400   Starting point
-PROJECTILE_WIDTH = 8     Starting point
+VALRUNE_WINGSPAN = 100   Anchor — port to starboard, 10% of screen width
+VALRUNE_FUSELAGE = 110   Anchor — bow to stern, so 55 from center either way
+BADDIE_WINGSPAN  =  75   Anchor — the standard baddie
+BADDIE_MIN       =  50   Fixed — nothing is smaller
+PROJECTILE_WIDTH =   8   Starting point
 ```
 
-Sanity check against your density targets: 30 minions at 64 units is 1,920 units of total
-width, under three screen-widths, comfortable on a 2200-tall screen. A 75-baddie zerg is
-roughly seven rows — dense but navigable. **Ship size and density targets are consistent.**
+**There is no maximum baddie size.** A boss may fill the screen.
+
+| Threat class | Wingspan | Relative to the Valrune |
+|---|---|---|
+| Debris | 50 | Half |
+| Minion | 75 | Three quarters — **the anchor** |
+| Elite | 110 | Slightly larger |
+| Miniboss | 250 | 2.5× |
+| Boss | 500 | 5×, half the screen width |
+
+`wingspan` and `fuselage` are new canon (D-073). They join `bow`/`stern`/`port`/`starboard`
+and give the ship real geometry nouns, so "55 units forward of center" has a name instead
+of being restated every time.
+
+### Expected baddie counts
+
+```
+COUNT_SWARM    = 200   Fixed — the hard ceiling, never more on screen
+COUNT_STANDARD =  85   Anchor — a normal wave, range 75–100
+COUNT_TANK     =  20   Starting point — fewer, larger, slower
+```
+
+**This is a 3× correction to the old assumption and it is the most consequential change in
+this revision.** Every AoE valuation in section 3 was written against 30 baddies. At 85
+standard and 200 in a swarm, radius abilities are worth several times what the previous
+numbers implied.
 
 ---
 
 ## 3. Radius bands
 
-Regions **around** a point. Anchored on `r1 = 120` (D-024).
+Regions **around** a point, measured from the center of the ship or effect.
 
-| Band | Units | % of width | Uses in your spreadsheets |
-|---|---|---|---|
-| `r_short` | 60 | 6% | 4 |
-| `r1` | 120 | 12% | **51** |
-| `r2` | 240 | 24% | 29 |
-| `r3` | 400 | 40% | 7 |
+| Band | Units | % of width | Relative to the Valrune | Uses |
+|---|---|---|---|---|
+| `r_short` | 100 | 10% | Just clear of the hull | 4 |
+| `r1` | 150 | 15% | 1.5 wingspans | **51** |
+| `r2` | 250 | 25% | 2.5 wingspans | 29 |
+| `r3` | 400 | 40% | 4 wingspans | 7 |
 
-**Four rungs is right — the authoring proves it.** I counted every radius reference across
-your ability, attunement, and status tables. Nothing reaches for a fifth band, and the
-distribution is heavily bottom-weighted.
+**Four rungs is right — the authoring proves it.** Nothing across the ability, attunement,
+or status tables reaches for a fifth, and the distribution is heavily bottom-weighted.
 
 **`r1` is the single most consequential number in the game.** Fifty-one abilities read
-against it. Moving it from 120 to 150 silently buffs a fifth of your content. It should
-change only deliberately, and the balance engine should report its sensitivity.
+against it, so the balance engine should report its sensitivity separately from everything
+else.
 
-### What these actually hit
+### What these actually hit — O-21 resolved
+
+Measured from your screenshot: **~170 baddies on screen, a semi-targeted `r1` landing on
+~15 of them.** That is a real data point and it pins a constant that everything AoE depends
+on.
+
+Working backwards, against the action zone (1000 × 2000 = 2,000,000 sq units, where baddies
+actually live):
 
 ```
-expected_hits = density × (π r² / playfield_area) × CLUSTERING
+r1 covers π × 150² / 2,000,000 = 3.53% of the field
+uniform expectation at 170 baddies = 6.0
+observed = 15
 ```
 
-| Band | Playfield covered | At 30 baddies, uniform | At CLUSTERING 2.0 |
-|---|---|---|---|
-| `r_short` | 0.5% | 0.15 | 0.3 |
-| `r1` | 2.1% | 0.6 | 1.2 |
-| `r2` | 8.2% | 2.5 | 4.9 |
-| `r3` | 22.8% | 6.9 | 13.7 |
+**So the field is roughly 2.5× denser where you aim than it is on average.** That number
+bundles two different things, and the balance engine needs them apart:
 
-That `r1` catches roughly one extra baddie is the correct read, and it is why chain
-lightning specifies "the nearest baddie within r1" rather than "all baddies."
+```
+CLUSTERING_BLIND = 1.85    Baddies clump on their own — self and fixed_point deliveries
+CLUSTERING_AIMED = 2.50    Plus the player choosing the thickest part — targeted deliveries
+```
+
+A nova centered on your own hull cannot pick its spot; a lobbed bomb can. Valuing both at
+the same number would overpay every self-centered ability in the game.
+
+**Clustering must decay as the radius grows.** A tiny AoE can always find a dense pocket; an
+AoE covering a quarter of the field cannot do better than the field average. So:
+
+```
+effective = 1 + (CLUSTERING − 1) × (1 − area_ratio)
+hits = min(count × area_ratio × effective, count)
+```
+
+| Band | Field covered | Aimed, swarm (200) | Aimed, standard (85) | Blind, standard (85) |
+|---|---|---|---|---|
+| `r_short` | 1.6% | 7.8 | 3.3 | 2.5 |
+| `r1` | 3.5% | **17.3** | 7.3 | 5.5 |
+| `r2` | 9.8% | 46.2 | 19.6 | 14.7 |
+| `r3` | 25.1% | 107 | 45.3 | 34.9 |
+
+The model reproduces your observation — 14.7 at 170 baddies against the 15 you counted —
+which is about as much validation as a single data point can give.
+
+**Compare against what this file said last revision: `r1` hit 1.2 baddies.** It hits 7 in a
+standard wave and 17 in a swarm. **Every radius ability in the game is worth 6–14× what the
+previous numbers implied**, and single-target abilities have not moved at all. Nothing in
+the ability set has been balanced against this yet. The Phase 4 engine has to run before
+any AoE numbers are trusted.
 
 ---
 
 ## 4. Distance bands
 
-Reach **away from** a point. Respaced per your instruction: the old top rung becomes
-`dis4`, with real rungs added beneath it.
+Reach **away from** a point. **Distances are measured from the bow, radii from the center**
+(D-074) — a projectile spawns at the bow, so a distance is literally how far it travels.
 
-| Band | Units | Derivation |
-|---|---|---|
-| `dis_short` | 60 | = `r_short` **Fixed** |
-| `dis1` | 120 | = `r1` **Fixed** |
-| `dis2` | 400 | Mid-screen |
-| `dis3` | 800 | Long, but not maximum |
-| `dis4` | 1600 | **Maximum — ready line to the top of the action zone** |
-| `dis5` | 2400 | Beyond maximum — wrapped angled shots, the Expanse |
+The near rungs are offset by the 55-unit half-fuselage so they finish flush with a radius
+ring. An ability reaching `dis_short` and an ability covering `r_short` cover the same
+forward ground:
 
-`dis4` keeps the physical meaning: 2000 minus 360 for the ready line leaves 1640, so
-**1600 reaches the top of the action zone**, and your solar beam "out to distance_3 (max
-distance)" lands exactly where you wrote it.
+| Band | From bow | Reaches, from center | Derivation |
+|---|---|---|---|
+| `dis_short` | 45 | 100 | Flush with `r_short` **Fixed** |
+| `dis1` | 95 | 150 | Flush with `r1` **Fixed** |
+| `dis2` | 345 | 400 | Flush with `r3` **Fixed** |
+| `dis3` | 800 | 855 | Mid-screen |
+| `dis4` | 1600 | 1655 | **Maximum — ready line to the top of the action zone** |
+| `dis5` | 2400 | — | Beyond maximum — wrapped angled shots, the Expanse |
+
+The low three are odd numbers on purpose, because ring alignment is what they are for. The
+far three are round, because at 800+ the 55-unit bow offset is under 7% and alignment stops
+mattering — those rungs are about screen reach.
+
+`dis4` keeps its physical meaning: 2000 minus 360 for the ready line leaves 1640, so **1600
+reaches the top of the action zone**, and your solar beam "out to distance_3 (max distance)"
+lands exactly where you wrote it.
 
 ### What the existing content maps to
 
@@ -157,9 +223,9 @@ Your spreadsheets use three distance rungs, 36 references total:
 Solar beam annotates `distance_3` as "(max distance)", so the rename matches your intent
 rather than reinterpreting it. Phase 2 does the remap mechanically.
 
-**`dis3` at 800 is currently unused** — that is the rung you asked for, sitting empty until
-something needs it. Spectral Lance is the likely first customer: it fires to max distance
-and pays bonus damage "beyond distance_2", and 800 is a better threshold for that than 400.
+**`dis3` at 800 is currently unused**, sitting empty until something needs it. Spectral
+Lance is the likely first customer: it fires to max distance and pays bonus damage "beyond
+distance_2", and 800 is a better threshold for that than 400.
 
 ---
 
@@ -167,52 +233,73 @@ and pays bonus damage "beyond distance_2", and 800 is a better threshold for tha
 
 | Band | Units | Definition | Uses |
 |---|---|---|---|
-| `w1` | 40 | Half the Valrune | 3 |
-| `w2` | 80 | The full Valrune | 2 |
-| `w3` | 240 | Two Valrunes plus half a Valrune each side | 0 |
-| `w4` | 400 | Five Valrunes — CRYO's wave blast | 0 |
+| `w1` | 50 | Half a wingspan — a wide beam | 3 |
+| `w2` | 100 | A full wingspan — a wider beam | 2 |
+| `w3` | 200 | A wingspan plus half either side — **CRYO's wave blast** | 0 |
+| `w4` | 400 | A wingspan plus 1.5 either side — held in reserve | 0 |
 
-**You were right that `w0` was bad naming, and the fix is to delete it rather than
-renumber.** A projectile's width is not a band anybody authors against — nobody writes
-`width: w0`. It is a property of the projectile, so it lives in entity sizes as
-`PROJECTILE_WIDTH` and the ladder starts at 1 like every other ladder.
+**`w0` is deleted rather than renumbered.** A projectile's width is not a band anybody
+authors against — nobody writes `width: w0`. It is a property of the projectile, so it
+lives in entity sizes as `PROJECTILE_WIDTH` and the ladder starts at 1 like every other
+ladder.
 
-`w4` is the CRYO answer: its wave blast trades reach for width, so it needs a rung above
-the general-purpose ones rather than a special case.
+`w4` exists for abilities that do not exist yet, most likely a boss attack. Leaving a rung
+unclaimed is cheaper than discovering the ladder is too short mid-authoring.
 
 ---
 
 ## 6. Push, pull, and gravity
 
-**Both are `(distance, time)`** — reverting my earlier split, because you are right that
-the symmetry is real. One is displacement away from a source, the other toward it, and
-**neither stops the target's own movement.** Each contributes a velocity that adds to
-whatever the target was already doing.
+You are right that a band table would explode: push and pull each want a distance *and* a
+time, and pull additionally wants to speak in radii rather than distances. Three dimensions
+of banding is a combinatorial mess.
 
-**Gravity is the status that disables self-movement** (D-055). Only then does a pull become
-the target's entire motion. Nothing arbitrates, because nothing competes.
+**But fully custom numbers are worse**, because the Balance Calibrator cannot compare two
+abilities that each invented their own displacement. Parity checking needs banded values.
 
-| Band | Distance | Time | Effective | Feel |
-|---|---|---|---|---|
-| `push_1` | 40 | 0.08s | 500 u/s | The Forge knock — a stutter, not a launch |
-| `push_2` | 100 | 0.12s | 833 u/s | A real shove |
-| `push_3` | 220 | 0.20s | 1100 u/s | A detonation |
-| `pull_1` | 80 | 1.0s | 80 u/s | Slowed but still advancing |
-| `pull_2` | 200 | 1.0s | 200 u/s | Overpowered; it comes to you |
-| `pull_3` | 450 | 1.0s | 450 u/s | Inescapable under gravity |
+**The fix is to compose existing ladders rather than build a new one** (D-075). There are no
+`push_1`/`pull_2` ids. There is only push and pull, each written as a pair:
 
-Push windows are short because a push is one impulse. Pull windows are 1.0s because a pull
-repeats for as long as the status lasts, making the pair read as a rate.
+```
+push: { distance: <any distance or radius band>, time: <time class> }
+pull: { distance: <any distance or radius band>, time: <time class> }
+pull: { from: <radius band>, to: <radius band>, time: <time class> }
+```
 
-**Read against a minion at 120 u/s:** `pull_1` at 80 slows an advancing baddie without
-stopping it, which is your `misc_ideas` line 15 exactly.
+Distance draws from the ladders that already exist. Only **time** is new, and it needs four
+values, not a matrix:
 
-**One thing to watch:** these are calibrated against *baddies*. Pulling the **Valrune** at
-1000 u/s is a different scale entirely — `pull_3` would barely inconvenience the player.
-Anything that pulls the player has to pair with gravity to matter at all.
+| Class | Seconds | Feel |
+|---|---|---|
+| `t_snap` | 0.08 | An impulse — the Forge knock, a stutter rather than a launch |
+| `t_quick` | 0.25 | A real shove |
+| `t_steady` | 1.00 | Reads as a rate; the natural pairing for a sustained pull |
+| `t_slow` | 2.50 | A long drag |
 
-`pull_stop_radius` defaults to `null` (all the way to the point); a value stops the pull at
-that ring while gravity keeps holding the target.
+Full expressiveness, no new table, and both dimensions stay banded so parity still works.
+
+### Two forms of pull
+
+Your gravity-well case — "pulling from radius 3 to within radius 2" — is not a displacement,
+it is a destination. Both forms exist:
+
+- **`pull` by distance** displaces the target N units toward the origin, and keeps going.
+- **`pull` from/to** draws the target inward until it is within the inner radius, then
+  stops pulling while the status keeps holding it.
+
+The second is what almost every gravity ability you wrote actually wants.
+
+### What does not change
+
+**Neither push nor pull stops the target's own movement.** Each contributes a velocity that
+adds to whatever the target was already doing. **Gravity is the only status that disables
+self-movement** (D-055), and only then does a pull become the target's entire motion.
+Nothing arbitrates, because nothing competes.
+
+**One thing to watch:** displacement reads completely differently against a minion at
+120 u/s and the Valrune at 1000 u/s. A pull that drags a baddie decisively would barely
+inconvenience the player. Anything that pulls the player has to pair with gravity to matter
+at all.
 
 ---
 
@@ -221,9 +308,9 @@ that ring while gravity keeps holding the target.
 ```
 VALRUNE_SPEED_BASE   = 1000 u/s    Anchor — 1.0s to cross screen width
 VALRUNE_SPEED_RANKS  = 20 × +40    → 1800 u/s at max
-BADDIE_SPEED_MINION  =  120 u/s    Anchor — what pull bands read against
-PROJECTILE_SPEED     = 2400 u/s    Starting point
-PROJECTILE_RANKS     = 5 × +160    → 3200 u/s at max
+BADDIE_SPEED_MINION  =  120 u/s    Anchor — what displacement reads against
+PROJECTILE_SPEED     = 2800 u/s    Starting point — see the floor rule below
+PROJECTILE_RANKS     = 5 × +160    → 3600 u/s at max
 ROTATION_BASE        =  420 °/s    Starting point
 ROTATION_RANKS       = 20 × +15    → 720 °/s at max
 ```
@@ -236,48 +323,47 @@ flat °/s fix that and are easier to reason about.
 rotation at 3.3 turns per second, which is past the point of usefulness. 420 → 720°/s
 means a new player can already turn briskly and a maxed one gets two turns per second.
 
-### The projectile-to-ship speed ratio matters
+### Velocity inheritance is cut, and replaced by a floor rule
 
-At 1000 u/s base, the Valrune crosses the screen width in 1.0s, its height in 2.2s. At
-2400 u/s a projectile crosses `dis4` in 0.67s.
-
-**Projectile speed must stay well above ship speed.** 2400 against 1000 is 2.4× at base,
-narrowing to 1.8× at max (3200 against 1800). If it narrows further, shooting while
-advancing feels wrong: you chase your own bullets, forward shots crawl and backward shots
-race.
-
-### Velocity inheritance — yes, but partial
+Projectiles do not inherit ship velocity (D-072 reversed). Instead:
 
 ```
-PROJECTILE_INHERITANCE = 0.25    Starting point
-projectile_velocity = PROJECTILE_SPEED + 0.25 × (ship velocity along the firing axis)
+PROJECTILE_SPEED must exceed VALRUNE_SPEED at maximum thrusters, with margin.
 ```
 
-Your idea is physically correct and free, in the sense that travel time does not enter the
-offense model (D-028 counts uses × damage, not flight time), so this is pure feel with no
-balance cost. Worth having.
+The worst case is a maxed thruster line and an untouched velocity line — 1800 u/s ship
+against a base projectile. **At the old 2400 that ratio is 1.33×, which satisfies the rule
+on paper and still feels wrong**: charging forward, your bullets pull ahead at only 600 u/s
+and appear to hang in front of the ship.
 
-**But full inheritance breaks backward shots badly.** At maximum investment the ship moves
-1800 u/s and projectiles fly 3200:
+**Base moves to 2800** so the worst case is 1.56× and the normal case is 2.8×:
 
-| Inheritance | Backward projectile | Relative to a ship moving 1800 |
-|---|---|---|
-| 100% | 1400 u/s | **−400 — the bullet travels behind you** |
-| 50% | 2300 u/s | +500, sluggish |
-| **25%** | 2750 u/s | +950, fine |
-| 0% | 3200 u/s | +1400 |
+| Situation | Ship | Projectile | Ratio |
+|---|---|---|---|
+| Fresh account | 1000 | 2800 | 2.8× |
+| **Worst case** — thrusters maxed, velocity untouched | 1800 | 2800 | **1.56×** |
+| Both maxed | 1800 | 3600 | 2.0× |
 
-At full inheritance you literally outrun your own bullets while retreating, which kills
-kiting — flying away while shooting back is a core shooter tactic and it should not be
-punished into non-existence.
+At 2800 u/s a projectile crosses `dis4` in 0.57s and the screen width in 0.36s.
 
-**25% gives the feel without the failure.** Charging forward makes shots snap; retreating
-makes them noticeably lazier; neither becomes unusable.
+### Velocity buys turn rate too, and the units make it automatic
 
-One interaction to watch: a slower backward projectile spends longer in flight, and with
-`homing` it therefore gets more time to curve. Retreating shots would become *more*
-accurate, which is backwards. Worth checking in M0; the fix if it bites is to scale homing
-correction by distance travelled rather than by time.
+Your point is correct and worth stating precisely. A projectile's turning circle is
+`speed ÷ angular_rate`, so a faster projectile with the same degrees-per-second turns
+through a **wider** arc and homes worse. Buying velocity would quietly sell you accuracy.
+
+Holding the turning circle constant means angular rate must scale linearly with speed —
+which is exactly what happens if homing is denominated **per unit travelled rather than per
+second**:
+
+```
+HOMING_RATE = 6° per 100 units travelled    Starting point
+```
+
+**Speed then cancels out of the path entirely.** A 2800 u/s and a 3600 u/s projectile trace
+the identical curve, one just gets there sooner. No separate turn-rate rank line, no
+coupling constant to tune, and the interaction that would have needed watching in M0 simply
+cannot occur.
 
 ---
 
@@ -332,7 +418,7 @@ Three consequences worth holding onto:
 | `bulwark_flat` | 0 | 16 × +1 | 16 | See below |
 | `thrusters` | 1000 u/s | 20 × +40 | 1800 u/s | |
 | `gyros` | 420 °/s | 20 × +15 | 720 °/s | |
-| `velocity` | 2400 u/s | 5 × +160 | 3200 u/s | |
+| `velocity` | 2800 u/s | 5 × +160 | 3600 u/s | Carries turn rate with it |
 
 ### `crit_chance` — 1.0% base, 12 ranks × +0.25%, max 4.0% (D-070)
 
@@ -367,19 +453,62 @@ approaches zero and the shot counter runs into the hundreds between crits.
 
 ### `homing` (D-060)
 
-At 18° a target anywhere in a 36° cone gets hit. **That ceiling is probably too steep** —
-your read, and I agree. A 36° cone is a third of the forward hemisphere, which starts to
-feel like the game is playing itself rather than being forgiving.
+```
+homing      = total angular correction budget, 2° → 18°
+HOMING_RATE = 6° per 100 units travelled
+HOMING_RANGE = dis4 (1600)    Beyond this, no correction at all
+```
 
-The ladder is easy to shorten once it is testable: dropping to 6 ranks caps at 14°, and
-5 ranks caps at 12°. **Left at 18° so M0 tests the generous end** — it is easier to feel
-"this is too much" and dial back than to guess where the line is from a desk.
+**Homing is a budget, not a rate.** The rate governs how fast it is spent; the rank line
+governs how much there is. The budget only becomes reachable past ~300 units of travel,
+and that is correct rather than a limitation — **close range is already forgiving in
+absolute terms.** A standard baddie is 75 units across, so it subtends 20.6° at 100 units
+but only 1.34° at `dis4`. Homing matters exactly where the geometry gets cruel, and there
+is plenty of flight distance there to spend the budget.
+
+**Nothing homes beyond `dis4`** (D-076). A shot fired across the Expanse at something 3000
+units away flies straight.
+
+### The 18° ceiling — now with a number attached
+
+Lateral coverage at maximum range is the honest way to read this: **at `dis4`, 18° of
+correction reaches 520 units sideways.** That is over half the screen width, from a shot
+you aimed badly.
+
+| Homing | Lateral reach at `dis4` | Versus a 75-unit baddie |
+|---|---|---|
+| 2° (base) | 56 | Roughly doubles the hit window |
+| 8° | 225 | Generous |
+| 12° | 340 | A third of the screen |
+| **18° (max)** | **520** | **Over half the screen** |
+
+Your instinct that this is too steep looks right, and 12° is the more defensible ceiling.
+**Left at 18° anyway so M0 tests the generous end** — it is easier to feel "this is too
+much" and dial back than to guess the line from a desk. Dropping to 6 ranks caps at 14°,
+5 ranks at 12°.
 
 **The 2° free baseline mirrors the free crit**, for a different reason with the same shape:
 rate-based rotation plus screen-relative movement means a new player is fighting two axes
 at once, and zero correction would make the opening hour feel broken rather than hard.
 **M0 should test 0° against 2°** — obvious in thirty seconds on a phone, unknowable at a
 desk.
+
+### Homing means something different per delivery (D-077)
+
+"Bending" is only right for things that fly. The other deliveries get the same budget
+applied at the moment of firing:
+
+| Delivery | How correction is spent |
+|---|---|
+| **Projectile** | Curves in flight at `HOMING_RATE`, up to the budget |
+| **Beam** | **The emitter angles.** The gun rotates up to the budget so the beam is a straight line from bow to target. Beams never bend |
+| **Wave / width shape** | The wave's center axis rotates onto the target, up to the budget, and the wave spreads from that aligned axis |
+
+CRYO I–III are the wave case: the blast is short and wide, so what the player needs is for
+the wide part to be centered on something, not for the edge to curl.
+
+This keeps one rank line meaningful across every ability in the game instead of being dead
+value on half of them.
 
 ### `bulwark_flat` (D-058)
 
@@ -425,8 +554,8 @@ selling a purchasable version of an accessibility feature, because the feature i
 Variables use **full words** in code (D-047): `duration`, `cooldown`, `radius`, `stacks`,
 `damage`. The source spreadsheets keep their short forms.
 
-**Band ids stay short** — `r1`, `dis2`, `w1`, `push_1`, `pull_2` — because they are token
-values, not variables.
+**Band ids stay short** — `r1`, `dis2`, `w1`, `t_quick` — because they are token values,
+not variables.
 
 Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 
@@ -436,8 +565,12 @@ Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | **`CLUSTERING = 2.0`** is a guess and every AoE valuation rides on it. Not answerable at a desk — it becomes a slider in the Balance Lab and gets measured in M0 | M0 |
+| 1 | **Every AoE ability is now worth 6–14× what the last revision assumed**, because baddie counts tripled. None of the authored damage numbers have been checked against this | Phase 4 |
 | 2 | **Expanse at 6000²** — 6s to cross at base speed. A torus too large stops reading as a torus | M0 |
-| 3 | **`HOMING_BASE`** — 0° or 2°? And is the 18° ceiling too steep? | M0 |
-| 4 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it drives the Expanse size and the projectile ratio | M0 |
-| 5 | **Homing plus velocity inheritance** may make retreating shots more accurate, since a slower projectile has longer to curve | M0 |
+| 3 | **`HOMING_BASE`** — 0° or 2°? And 18° reaches 520 units sideways at max range, which looks too steep | M0 |
+| 4 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it drives the Expanse size and the projectile floor | M0 |
+| 5 | **200 baddies at 75 units each** is a rendering and collision load worth proving early on a real mid-range phone | M0 |
+
+O-21 is resolved: `CLUSTERING_BLIND = 1.85`, `CLUSTERING_AIMED = 2.50`, with decay by
+coverage. Still a Balance Lab slider, but it is now anchored to a measurement instead of a
+guess.

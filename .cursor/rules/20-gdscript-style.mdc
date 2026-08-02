@@ -19,7 +19,7 @@ Not active until M0. `game/` is empty during planning.
   The short forms in the source spreadsheets (`dur`, `c`, `r`, `s`, `dam`) do not cross
   into code, where there is no column header to supply context and `c` sits next to
   `charges`, `cooldown`, and `combination` (D-047).
-- **Band ids stay short** — `r1`, `dis2`, `w1`, `push_1`. These are token values, not
+- **Band ids stay short** — `r1`, `dis2`, `w1`, `t_quick`. These are token values, not
   variables. `radius = "r2"` reads correctly.
 - Vocabulary is fixed by `docs/14-CANON.md`. A **gun** is a mount, a **gun-shot** is one
   trigger event across all mounts, a **projectile** is one bullet, a **beam** is a
