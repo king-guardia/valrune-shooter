@@ -28,18 +28,19 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 
 The gate is open. Phase 2 can proceed on vocabulary.
 
-### 1b — Constants ← **NEXT**
+### 1b — Constants (drafted)
 
-- [ ] `docs/15-CONSTANTS.md`
-  - [ ] Band ladders. Anchor on **`dis3` = ready line to top border** (D-054) — the one
-        band with a physical meaning; derive the rest relative to it rather than
-        guessing each independently
-  - [ ] Widths `w0`–`w3`, Valrune-relative
-  - [ ] `push_N` / `pull_N` as `(distance, time)` pairs
-  - [ ] Expanse arena dimensions in screens (D-059)
-  - [ ] `homing` rank count and degrees per rank (D-060)
-  - [ ] `bulwark_flat` rank count now that it carries mitigation alone (D-058)
-  - [ ] Resolve O-14 (homing vs Assist Aim)
+- [x] `docs/15-CONSTANTS.md` — playfield, entity sizes, all four band ladders,
+      push/pull, speeds, time, the Expanse, and the two rank lines needing numbers
+- [x] Resolved O-14 (homing vs Assist Aim) and O-01 (allowlist closed)
+- [x] 5 decisions recorded (D-062 to D-066)
+- [ ] **Bryan reviews — 5 open questions at the bottom of the file.**
+      Three (`CLUSTERING`, Expanse size, `HOMING_BASE`) are M0 measurements rather than
+      desk decisions. The `dis1`–`dis2` gap resolves itself in Phase 2 once the ability
+      histogram exists.
+
+### 1c/1d — Statuses and ADRs ← **NEXT**
+
 - [ ] `docs/16-STATUS-EFFECTS.md` — catalog, tags, families, ImmunitySet/OverrideSet
   - [ ] Resolve O-02 (tag taxonomy) and O-13 (who owns `invisible`)
 - [ ] Expand load-bearing decisions into full ADRs (D-007, D-009, D-015, D-019, D-029)

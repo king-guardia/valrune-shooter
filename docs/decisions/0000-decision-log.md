@@ -500,11 +500,63 @@ needs to hurt both sides.
 
 ---
 
+## Constants — Phase 1b (`docs/15-CONSTANTS.md`)
+
+### D-062 [R] Push is a displacement; pull is a speed
+Refines D-055, which described both as `(distance, time)` bands.
+
+- **`push_N`** is genuinely a fixed displacement over a fixed window — `push_1` is
+  40 units over 0.08s, the Forge stutter.
+- **`pull_N`** is a sustained **speed**. Its distance depends on how long the status lasts
+  and where the target started, so a distance parameter would be fiction.
+
+Pull speeds read against a minion's 120 u/s: `pull_1` at 80 slows an advancing baddie
+without stopping it (`misc_ideas` line 15), `pull_2` at 200 overpowers it, `pull_3` at 450
+is inescapable under gravity.
+
+### D-063 [N] `homing` and Assist Aim are different mechanisms
+Resolves O-14. **`homing` bends the projectile** after it leaves the gun; **Assist Aim
+bends the ship's heading.** Nothing purchasable is gated behind the accessibility toggle,
+and nothing about the toggle is for sale.
+
+### D-064 [N] Vertical geometry is sized against the minimum device, not the reference
+Width is fixed at 1000 and height varies with aspect — the correct way round, since fixing
+height would rescale the ship and every radius between phones and balance would not
+transfer.
+
+All vertical constants are sized against **2000** (18:9, minimum supported), not 2200
+(20:9, reference). A taller phone gets bonus sky, a mild advantage not worth correcting.
+Sizing against the reference would push content off-screen on an 18:9, which is a real
+failure.
+
+**The ready line is 360 units from the bottom**, not a percentage — a percentage drifts
+with aspect and puts the ship under the player's thumb on short screens.
+
+### D-065 [N] `dis3` anchors the distance ladder
+At minimum height 2000 minus 360 for the ready line, the usable column is 1640, so
+**`dis3 = 1600` reaches the top of the screen on the smallest supported device.** The one
+band with physical meaning; the rest are measured against it.
+
+**Known gap:** the ladder is bottom-heavy because `dis1` is pinned to `r1` (120) while
+`dis3` is pinned to screen height (1600). Nothing sits in 150–400, which is where
+mid-range projectiles will want to be. Deliberately not invented — the honest fix is to
+convert the abilities in Phase 2 and re-space against the real histogram.
+
+### D-066 [N] `CLUSTERING` is a balance input, not a constant
+```
+expected_hits = density × (π r² / playfield_area) × CLUSTERING
+```
+Uniform distribution understates every AoE, because baddies arrive in waves and converge
+on the player. A Wormhole wave front clusters far harder than an Expanse scatter, so this
+lives in the balance engine as a per-profile tunable. `2.0` is a placeholder and **every
+AoE valuation rides on it** until M0 measures it.
+
+---
+
 ## Open — not yet decided
 
 | # | Item | Blocks |
 |---|---|---|
-| O-01 | Percentage allowlist beyond crit chance, crit damage, Overclock | Phase 1b |
 | O-02 | Status tag taxonomy — do the five tags carve the space correctly? | Phase 1d |
 | O-03 | Chrono+Cryo passive replacement (slot vacated by D-019) | Content, not blocking |
 | O-04 | Element point economy — 10 points, max level 3, 5 base elements needs 15 to max. Sparse coverage means some spreads unlock very little; the Hangar must show that before you spend | Phase 7 |
@@ -513,5 +565,11 @@ needs to hurt both sides.
 | O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
 | O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |
-| O-14 | **`homing` vs the Assist Aim accessibility toggle.** Selling a purchasable version of an accessibility feature needs care. Cleanest split: `homing` bends the *projectile*, Assist Aim bends the *ship's heading* — different mechanisms, no awkwardness about paying for accessibility | Phase 1b |
 | O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `HORROR` and the fiction oddity costs nothing | Phase 2 |
+| O-16 | **16:9 support.** 1778 height is 222 units below the minimum. Letterbox, compress, or drop? Android 16:9 is now mostly budget devices and tablets — worth a market-share check before spending effort | Phase 6 |
+| O-17 | **Expanse size.** 3000 × 4400 is a feel number. A torus that is too large stops reading as a torus and becomes a big empty box | M0 |
+| O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free 5% crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
+| O-19 | **The `dis1`–`dis2` gap.** Nothing sits in 150–400, where mid-range projectiles will want to be. Resolve by converting the abilities and reading the real histogram, not by guessing | Phase 2 |
+
+**Resolved since last revision:** O-01 (allowlist closed by D-058), O-07 (D-057),
+O-08 (D-058), O-09 (D-059), O-10 (D-061), O-14 (D-063).
