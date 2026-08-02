@@ -176,7 +176,7 @@ Supersedes `misc_ideas` line 36 (1 minute). Matches the balance window, so a 2-m
 ## Geometry and constants
 
 ### D-024 [N] Playfield is 1000 units wide
-Height derives from device aspect (~2200 on 20:9). Throat mode is exactly one screen, so `r1 = 120 units` reads as 12% of screen width and AoE hit count becomes computable:
+Height derives from device aspect (~2200 on 20:9). Wormhole mode is exactly one screen, so `r1 = 120 units` reads as 12% of screen width and AoE hit count becomes computable:
 
 ```
 expected_hits = density × (π·r² / playfield_area) × clustering
