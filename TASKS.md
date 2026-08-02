@@ -30,14 +30,15 @@ The gate is open. Phase 2 can proceed on vocabulary.
 
 ### 1b — Constants (drafted)
 
-- [x] `docs/15-CONSTANTS.md` — playfield, entity sizes, all four band ladders,
-      push/pull, speeds, time, the Expanse, and the two rank lines needing numbers
-- [x] Resolved O-14 (homing vs Assist Aim) and O-01 (allowlist closed)
-- [x] 5 decisions recorded (D-062 to D-066)
-- [ ] **Bryan reviews — 5 open questions at the bottom of the file.**
-      Three (`CLUSTERING`, Expanse size, `HOMING_BASE`) are M0 measurements rather than
-      desk decisions. The `dis1`–`dis2` gap resolves itself in Phase 2 once the ability
-      histogram exists.
+- [x] `docs/15-CONSTANTS.md` — playfield, entity sizes, all band ladders, push/pull,
+      speeds, time, the Expanse, and every rank line needing numbers
+- [x] Ladders respaced against a **count of real usage** in the spreadsheets:
+      `r1` appears 51 times, `distance_3` is authored as "max distance"
+- [x] Resolved O-01, O-14 (Assist Aim cut), O-16 (letterbox), O-19 (ladder respaced)
+- [x] 13 decisions recorded (D-062 to D-071)
+- [ ] **Bryan reviews — 4 open questions, all of them M0 measurements**
+      (`CLUSTERING`, Expanse size, `HOMING_BASE`, `VALRUNE_SPEED_BASE`) rather than
+      desk decisions
 
 ### 1c/1d — Statuses and ADRs ← **NEXT**
 

@@ -502,22 +502,31 @@ needs to hurt both sides.
 
 ## Constants — Phase 1b (`docs/15-CONSTANTS.md`)
 
-### D-062 [R] Push is a displacement; pull is a speed
-Refines D-055, which described both as `(distance, time)` bands.
+### D-062 [C] Push and pull are both `(distance, time)`
+Upholds D-055 against my proposed split. One is displacement away from a source, the other
+toward it, and **neither stops the target's own movement** — each contributes a velocity
+that adds to whatever the target was already doing. **Gravity is the status that disables
+self-movement**, and only then is a pull the target's entire motion.
 
-- **`push_N`** is genuinely a fixed displacement over a fixed window — `push_1` is
-  40 units over 0.08s, the Forge stutter.
-- **`pull_N`** is a sustained **speed**. Its distance depends on how long the status lasts
-  and where the target started, so a distance parameter would be fiction.
+Push windows are short (0.08–0.20s) because a push is one impulse. Pull windows are 1.0s
+because a pull repeats while the status lasts, so the pair reads as a rate.
 
-Pull speeds read against a minion's 120 u/s: `pull_1` at 80 slows an advancing baddie
-without stopping it (`misc_ideas` line 15), `pull_2` at 200 overpowers it, `pull_3` at 450
-is inescapable under gravity.
+Bands are calibrated against a minion at 120 u/s. **They do not transfer to the player at
+1000 u/s** — anything pulling the Valrune must pair with gravity to matter.
 
-### D-063 [N] `homing` and Assist Aim are different mechanisms
-Resolves O-14. **`homing` bends the projectile** after it leaves the gun; **Assist Aim
-bends the ship's heading.** Nothing purchasable is gated behind the accessibility toggle,
-and nothing about the toggle is for sale.
+### D-063 [R] Assist Aim is cut; the settings stay
+Dissolves O-14 rather than resolving it. The v0 accessibility list conflated two things:
+
+**Kept** — ordinary settings every shooter ships, hours of work each: screen shake 0–100%,
+flash reduction, haptics toggle, colorblind palettes, handedness swap, stick size, rotation
+sensitivity. Flash reduction earns its place regardless of framing, since photosensitivity
+is the one area storefronts and some regions actually care about.
+
+**Cut — Assist Aim.** The only item with real cost (auto-targeting logic, a priority rule,
+and an interaction with every ability that picks targets), and **`homing` now does its job
+better**: a player wanting more forgiveness buys homing ranks, making it a progression
+decision rather than a menu toggle. There is no longer any question about selling a
+purchasable version of an accessibility feature, because the feature is gone.
 
 ### D-064 [N] Vertical geometry is sized against the minimum device, not the reference
 Width is fixed at 1000 and height varies with aspect — the correct way round, since fixing
@@ -532,15 +541,37 @@ failure.
 **The ready line is 360 units from the bottom**, not a percentage — a percentage drifts
 with aspect and puts the ship under the player's thumb on short screens.
 
-### D-065 [N] `dis3` anchors the distance ladder
-At minimum height 2000 minus 360 for the ready line, the usable column is 1640, so
-**`dis3 = 1600` reaches the top of the screen on the smallest supported device.** The one
-band with physical meaning; the rest are measured against it.
+### D-065 [N] `dis4` anchors the distance ladder; rungs added beneath it
+Resolves O-19. Ladder: `dis_short` 60, `dis1` 120, `dis2` 400, `dis3` 800, **`dis4` 1600**,
+`dis5` 2400.
 
-**Known gap:** the ladder is bottom-heavy because `dis1` is pinned to `r1` (120) while
-`dis3` is pinned to screen height (1600). Nothing sits in 150–400, which is where
-mid-range projectiles will want to be. Deliberately not invented — the honest fix is to
-convert the abilities in Phase 2 and re-space against the real histogram.
+`dis4` keeps the physical meaning — 2000 minus 360 for the ready line leaves 1640, so 1600
+reaches the top of the action zone.
+
+**Existing content remaps mechanically in Phase 2**, counted across the spreadsheets:
+`distance_1` (8 refs) → `dis1`, `distance_2` (19) → `dis2`, `distance_3` (9) → **`dis4`**.
+Solar beam annotates `distance_3` as "(max distance)", so the rename follows the authoring
+rather than reinterpreting it.
+
+**`dis3` at 800 is deliberately unused** — the rung requested for future need. Spectral
+Lance is the likely first customer, since it fires to max and pays bonus "beyond
+distance_2", for which 800 is a better threshold than 400.
+
+### D-065a [N] Four radius rungs is correct, and `r1` is the game's most sensitive number
+Counted across the ability, attunement, and status tables: `r_short` 4 references,
+**`r1` 51**, `r2` 29, `r3` 7. Nothing reaches for a fifth rung, so the ladder stays at four.
+
+**Fifty-one abilities read against `r1`.** Moving it from 120 to 150 silently buffs a fifth
+of the content. It changes only deliberately, and the balance engine should report its
+sensitivity.
+
+### D-065b [N] `w0` is deleted; the width ladder starts at 1
+A projectile's width is not a band anyone authors against — nobody writes `width: w0`. It
+is a property of the projectile and lives in entity sizes as `PROJECTILE_WIDTH`.
+
+Ladder: `w1` 40 (half Valrune), `w2` 80 (full), `w3` 240 (three), **`w4` 400** — the CRYO
+answer, since its wave blast trades reach for width and needs a rung rather than a special
+case.
 
 ### D-066 [N] `CLUSTERING` is a balance input, not a constant
 ```
@@ -550,6 +581,54 @@ Uniform distribution understates every AoE, because baddies arrive in waves and 
 on the player. A Wormhole wave front clusters far harder than an Expanse scatter, so this
 lives in the balance engine as a per-profile tunable. `2.0` is a placeholder and **every
 AoE valuation rides on it** until M0 measures it.
+
+### D-067 [N] The action zone — baddies spawn off-screen but act in view
+> Baddies spawn above the visible area, but **every entry and first action happens inside
+> the bottom 2000 units.** Nothing sits on a border. Traversing outside is fine.
+
+A baddie spawns at 2300, drifts down, and cannot telegraph, shoot, or turn until it is at
+or below 2000. `SPAWN_MARGIN = 300` is the runway it needs to be moving at speed before it
+becomes the player's problem, rather than materializing at the edge.
+
+### D-068 [R] 16:9 letterboxes rather than reshaping the game
+Resolves O-16. Designing all vertical geometry against 1778 would cost every modern player
+10% of their vertical space for a market slice that is now mostly pre-2017 devices and
+tablets. Letterboxing costs thin bars on rare hardware and guarantees **identical gameplay
+everywhere** — a shorter action zone would change every timing and every band, and balance
+measured on one device would not hold on another.
+
+### D-069 [R] Speed ranks are flat, and the ship is much faster
+v0 had thrusters and gyros at `+0.15× base` and velocity at `+8%` — percentages, none on
+D-014's allowlist. All three become flat per rank.
+
+```
+VALRUNE_SPEED_BASE = 1000 u/s   20 × +40   → 1800    # 1.0s to cross screen width
+ROTATION_BASE      =  420 °/s   20 × +15   →  720
+PROJECTILE_SPEED   = 2400 u/s    5 × +160  → 3200
+```
+
+The ship is **2.3× v0's 440 u/s**, which is what makes a 6000-unit Expanse crossable in 6
+seconds instead of 14.
+
+**Rotation starts faster and tops out lower**, as requested: v0's 300 → 1200°/s put maximum
+rotation at 3.3 turns per second, past the point of usefulness.
+
+**The projectile-to-ship ratio is a constraint, not a coincidence.** At 2.4× the player
+outruns nothing. If it narrows, shooting while advancing feels wrong — you chase your own
+bullets, forward shots crawl and backward shots race. Preserve the ratio if either number
+moves.
+
+### D-070 [R] Free crit chance drops to 2%
+v0's 5% baseline existed so crit-triggered nodes are not dead on a fresh account, and that
+reasoning holds — but 5% was priced against 2 shots/sec. At the new 3.0 shots/sec, **2%
+still yields a crit every 17 seconds**, keeping those nodes alive while making an early
+crit an event. Line runs 2% → 10% (D-012).
+
+The PRD table must be regenerated for 1–10%; v0's covers 5–30% and is now useless.
+
+### D-071 [N] The Expanse is 6000 × 6000
+Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
+cross at base speed.
 
 ---
 
@@ -566,10 +645,10 @@ AoE valuation rides on it** until M0 measures it.
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
 | O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |
 | O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `HORROR` and the fiction oddity costs nothing | Phase 2 |
-| O-16 | **16:9 support.** 1778 height is 222 units below the minimum. Letterbox, compress, or drop? Android 16:9 is now mostly budget devices and tablets — worth a market-share check before spending effort | Phase 6 |
-| O-17 | **Expanse size.** 3000 × 4400 is a feel number. A torus that is too large stops reading as a torus and becomes a big empty box | M0 |
-| O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free 5% crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
-| O-19 | **The `dis1`–`dis2` gap.** Nothing sits in 150–400, where mid-range projectiles will want to be. Resolve by converting the abilities and reading the real histogram, not by guessing | Phase 2 |
+| O-17 | **Expanse at 6000².** Six seconds to cross at base speed. A torus too large stops reading as a torus and becomes an empty box | M0 |
+| O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
+| O-20 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it sets both the Expanse size and the projectile ratio. The most load-bearing feel number in the game | M0 |
+| O-21 | **`CLUSTERING = 2.0`.** Not answerable at a desk — becomes a Balance Lab slider and gets measured in M0. Every AoE valuation rides on it | M0 |
 
-**Resolved since last revision:** O-01 (allowlist closed by D-058), O-07 (D-057),
-O-08 (D-058), O-09 (D-059), O-10 (D-061), O-14 (D-063).
+**Resolved since last revision:** O-01 (D-058), O-07 (D-057), O-08 (D-058), O-09 (D-059),
+O-10 (D-061), O-14 (dissolved by D-063 — Assist Aim cut), O-16 (D-068), O-19 (D-065).
