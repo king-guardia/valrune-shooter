@@ -212,20 +212,22 @@ do not. That is a consumer of the data, not a difference in the data.
 
 **Rank is a purchased step. Tier is a node's I/II/III.** Never the same word.
 
-### The fourteen credit rank lines
+### The thirteen credit rank lines
 
 | Group | Lines |
 |---|---|
 | **Offense** | `damage`, `attack_speed`, `guns`, `crit_chance`, `crit_damage`, `velocity`, `spread` |
-| **Defense** | `hull`, `shield`, `shield_recharge`, `bulwark_flat`, `bulwark_percent` |
+| **Defense** | `hull`, `shield`, `shield_recharge`, `bulwark_flat` |
 | **Mobility** | `thrusters`, `gyros` |
 
 Ids are `snake_case`; display names live in `locale/`. Not SCREAMING_CASE — that is
 reserved for enum values, and these are data rows.
 
-**`bulwark_percent` conflicts with D-014** [OPEN] — flat values only, with a closed
-allowlist of crit chance, crit damage, and Overclock. This line is a percentage and is not
-on it. See open questions.
+**Thirteen, not v0's fourteen.** `bulwark_percent` is deleted (D-058): percentage
+mitigation multiplies with evasion, rime, and shields, which is the increasing-returns
+problem D-029 warns about. **Mitigation is flat only.** The percentage allowlist is now
+genuinely closed at crit chance, crit damage, and Overclock — all three legitimately
+probabilistic or multiplicative by nature.
 
 ### Nodes and abilities
 
@@ -513,8 +515,10 @@ while gravity keeps holding the target still.
 | **Wave** | One authored group of baddies inside a contract. | `Wave` |
 | **Sector** | Six contracts. Five sectors. | `Sector` |
 | **Wormhole** | Vertical contract type. Horizontal wrap, one screen. | `WORMHOLE` |
+| **Expanse** | Open arena contract type. **Wraps on both axes.** | `EXPANSE` |
 | **Clause** | A voluntary difficulty modifier for higher pay. 4 slots. | `Clause` |
-| **Bounty** | Credits from one kill. Slightly randomized, like damage. | `bounty` |
+| **Bounty** | One baddie's share of the contract's credit pool. | `bounty` |
+| **Bounty pool** | The contract's total credits, set by its index. | `bounty_pool` |
 
 **Banned: `stage`.** Your confusion was correct — the word was doing nothing. A contract
 *is* the playable thing; playing it is just playing it. If we ever need to name a single
@@ -524,16 +528,39 @@ attempt, that is a **run** (`ContractRun`), and only for save data and analytics
 
 **Banned: `level`, `mission`.** `level` especially — it already means element rank.
 
-### Bounty replaces the flat payout formula [OPEN]
+### Bounty
 
-Bounty is a genuinely better economy and it conflicts with v0 `04` §4.12, which you may
-not have noticed. v0 says payout is anchored to contract index and never varies, so
-farming is never optimal. Bounty makes payout depend on kills, which brings back two
-things v0 deliberately designed out — see open questions.
+Credits are awarded per kill, but the **total is set by the contract, not by the kills**.
 
-The "escaped baddie = missed bounty" idea is good and does real work: it gives the
-wormhole's bottom edge a consequence without adding a fail state, and it makes the
-`spawner` archetype a soft DPS check rather than an annoyance.
+```
+bounty_pool   = f(contract_index)
+baddie_bounty = bounty_pool / Σ weights
+                × weight(threat_class)
+                × random(0.85, 1.15)
+```
+
+Paid only on **reaching a checkpoint or completing the contract.** Clause bonuses apply to
+the total at the end.
+
+This keeps both properties that looked like a tradeoff. Payout stays index-anchored, so
+farming an easy contract is pointless and clearing fast costs nothing — and the ceiling is
+structural rather than a rule, because you cannot kill more baddies than the contract
+contains. Meanwhile every kill pays visibly, and **an escapee genuinely costs its share**,
+which gives the wormhole's bottom edge a consequence without a second fail state and turns
+`spawner` into a soft DPS check.
+
+The `random(0.85, 1.15)` spread is a **range roll, not a probability.** PRD (D-049)
+governs binary chances; damage and bounty roll ranges.
+
+### The Expanse wraps
+
+The open arena is a **rectangle wrapping on both axes**, not v0's disc with elastic
+pushback (D-059). Wrapping is the universal rule; the wormhole is just the case that clamps
+Y for design reasons, not a second model to learn.
+
+It ships with a small **minimap** carrying baddie dots, and the minimap must be
+**torus-aware** — a baddie near the right edge is also near the left edge, and a minimap
+that hides that is worse than no minimap.
 
 ---
 
@@ -553,39 +580,9 @@ A baddie is a **set of concurrent actions**, not one state. Phase 3 diagrams it.
 
 ## Open questions
 
-Everything else above is settled. These five need you.
+Two left. Everything else is settled.
 
-### 1. `bulwark_percent` versus the flat-values rule
-
-D-014 bans percentages outside a closed allowlist, because they scale multiplicatively
-with everything else. But the v0 rank tree has a 25-rank percentage damage-reduction line.
-It cannot be both.
-
-Percentage damage reduction is also the single worst offender for the increasing-returns
-problem in D-029 — it multiplies with evasion, rime, and shields.
-
-### 2. Bounty versus fixed payout
-
-If credits come from kills, then two things v0 killed on purpose come back: **farming an
-easy contract** can beat playing a hard one, and **clearing speed** now trades against
-income, so the optimal play is to kill everything slowly. There are clean fixes — cap
-bounty per contract, or make bounty the *presentation* of a payout that is really still
-index-anchored — but it needs a decision.
-
-### 3. The Field contract type
-
-You asked for a recommendation, so: **make it a wrapping rectangle, not a disc.**
-
-v0 argued a disc cannot wrap cleanly, which is true — but that is an argument against the
-disc, not against wrapping. A rectangular arena on a torus wraps on both axes, and you
-get: one movement model the player learns once, no elastic pushback system, no boundary
-shader, no HUD arrow, and no "cornered" feeling. It deletes code rather than adding it.
-
-Costs: a torus is disorienting without landmarks, and "flee the boss" stops working
-because it always comes back around. Both are fixable with the minimap, which v0 already
-specifies for this mode and which I would keep either way — yes to dots for baddies.
-
-### 4. Naming — the faction and the screens
+### 1. Naming — the faction and the screens
 
 Eldritch-plus-technology gives a clean structural axis that maps to your description, and
 I would put it in the data: `chassis: organic | augmented`. Organic ones are
@@ -601,15 +598,15 @@ Names I would put forward, all replaceable:
 | Purchases | **Requisitions** |
 | Pre-contract | **Briefing** |
 | Post-contract payout | **Settlement** |
-| Open arena contract type | **Expanse** |
 
-"Star Chart" also frees up `map`, which I would otherwise have banned.
+"Star Chart" also frees up `map`, which I would otherwise have banned. **Expanse** is
+already adopted for the open arena type.
 
 Screens you did not list but will need: **Settings**, **Bestiary** (v0 references one, and
 it is where DLC purchase intent forms), **Pause**, **Attributions**, and a **Store** if DLC
 is not folded into Requisitions.
 
-### 5. A dogfighting boss
+### 2. A dogfighting boss
 
 Very achievable, and not "AI" in any modern sense — a utility-scored behavior tree with
 maybe eight candidate actions, picking the best each half-second. Perhaps 1–2 weeks for

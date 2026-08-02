@@ -392,11 +392,71 @@ pull at a ring while gravity keeps holding the target.
 **run** (`ContractRun`), for save data and analytics only. **Wormhole**, never "throat".
 Also banned: `level` (already means element rank), `mission`.
 
-### D-057 [N] Bounty
-Credits come from kills, slightly randomized like damage, summed at contract end. Baddies
-that escape past the Valrune are missed bounty — giving the wormhole's bottom edge a
-consequence without a fail state, and making `spawner` a soft DPS check. **Conflicts with
-v0 payout; see O-07.**
+### D-057 [N] Bounty — a fixed pool divided across the roster
+Credits are awarded per kill, but the **total is set by the contract, not by the kills**.
+
+```
+pool          = f(contract_index)                        # index-anchored, as v0
+baddie_bounty = pool / Σ weights
+                × weight(threat_class)                   # elites, minibosses, bosses worth more
+                × random(0.85, 1.15)                     # cosmetic spread, like damage
+```
+
+Paid only on **reaching a checkpoint or completing the contract**. Clause bonuses apply
+to the total at the end.
+
+This resolves O-07 rather than trading against it, which is what the three options I
+posed had assumed was necessary:
+
+- **Farming is impossible** — no reward without a checkpoint or a clear.
+- **The cap is structural** — you cannot kill more baddies than the contract contains, so
+  the pool is the ceiling. No separate cap rule is needed.
+- **Clearing fast costs nothing** — the pool does not depend on time.
+- **Escapees genuinely cost their share**, giving the wormhole's bottom edge a consequence
+  without a second fail state and making `spawner` a soft DPS check.
+
+The `random(0.85, 1.15)` spread is a **range roll, not a probability** — PRD (D-049)
+governs binary chances, not continuous ranges. Damage rolls the same way.
+
+Open sub-questions, none blocking: exact threat-class weights (Phase 4, needs the balance
+engine), and whether bounty banked before a checkpoint survives a later death.
+
+### D-058 [R] `bulwark_percent` is deleted; flat mitigation only
+Resolves O-08. Percentage damage reduction is the worst offender for D-029's
+increasing-returns problem — it multiplies with evasion, rime, and shields — and it sat
+outside D-014's allowlist.
+
+**The rank tree is now 13 credit lines, not 14.** Defense keeps `hull`, `shield`,
+`shield_recharge`, `bulwark_flat`.
+
+Two consequences for Phase 4, neither blocking:
+
+- v0 priced this line at **3,500 credits**, so the tree's total sink drops from 30,477 to
+  ~26,977. A campaign clear paying ~18,150 goes from 60% to ~67% of the tree, making the
+  economy meaningfully more generous. Retune the pool or extend other lines.
+- `bulwark_flat` has only 8 ranks and now carries mitigation alone. It likely wants more
+  ranks to absorb the deleted budget. Exact count waits for the balance engine — inventing
+  it now would be a guess with no way to check it.
+
+The allowlist is unchanged and now genuinely closed: **crit chance, crit damage,
+Overclock.** Those are legitimately probabilistic or multiplicative by nature.
+
+### D-059 [R] The Field is a wrapping rectangle
+Resolves O-09. v0's circular arena with elastic pushback is replaced by a rectangular
+arena wrapping on both axes.
+
+Deletes the elastic pushback system, the boundary shader, and the HUD boundary arrow.
+Wrapping becomes the universal movement rule — the wormhole is simply the case that clamps
+Y for design reasons, not a second model to learn.
+
+**A minimap ships with it**, small, with dots for baddies. It must be **drawn
+torus-aware**: a baddie near the right edge is also near the left edge, and a minimap that
+does not show that is worse than none.
+
+Costs accepted: disorientation without landmarks (parallax and the minimap mitigate), and
+fleeing a boss no longer works because it always comes back around.
+
+Arena dimensions in screens are a Phase 1b number.
 
 ---
 
@@ -410,9 +470,6 @@ v0 payout; see O-07.**
 | O-04 | Element point economy — 10 points, max level 3, 5 base elements needs 15 to max. Sparse coverage means some spreads unlock very little; the Hangar must show that before you spend | Phase 7 |
 | O-05 | Cross-axis parity — how a pure-defensive ability compares to a pure-offensive one. Starting heuristic: abilities declare a role, parity checked within role, cross-role weights set once | Phase 4, deferred until real data |
 | O-06 | Threat profile calibration — composition and hit size are guesses until M0 | M0 |
-| O-07 | **Bounty vs fixed payout.** D-057 makes credits kill-driven; v0 `04` §4.12 anchored payout to contract index precisely so farming an easy contract never beats playing a hard one, and so clearing fast never costs income. Fixes: cap bounty per contract, or make bounty the *presentation* of an index-anchored payout | Phase 7 |
-| O-08 | **`bulwark_percent` vs D-014.** A 25-rank percentage damage-reduction line sits outside the flat-values allowlist, and percentage mitigation is the worst offender for D-029's increasing-returns problem — it multiplies with evasion, rime, and shields | Phase 1b |
-| O-09 | **Field contract boundary.** Recommendation: a wrapping rectangle, not a disc. v0 argued a disc cannot wrap cleanly, which argues against the disc rather than against wrapping. A torus deletes the elastic pushback, boundary shader, and HUD arrow, and teaches one movement model. Costs: disorientation without landmarks, and fleeing a boss stops working. Minimap with baddie dots either way | Phase 7 |
 | O-10 | **Faction identity.** Not "the Hollow". Eldritch plus technology. Proposed data axis: `chassis: organic \| augmented` — organic is collision-focused and may die on impact or ignore it, augmented shoots. One field driving fiction and behavior together | Phase 7 |
 | O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
