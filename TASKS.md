@@ -14,7 +14,8 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 - [x] Write `.cursor/rules` against current decisions
 - [x] Write the decision log (34 decisions, 6 open items)
 - [x] Root files: README, TASKS, CREDITS, .gitignore
-- [ ] Rename repo and local directory to `valrune-shooter`
+- [x] Rename GitHub repo and git remote to `valrune-shooter`
+  - Local folder stays `valrune-invaders` on purpose — see D-034
 
 ## Phase 1 — Glossary, constants, ADRs
 

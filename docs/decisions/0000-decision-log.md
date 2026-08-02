@@ -244,8 +244,13 @@ Design data lives in the repo as CSV/JSON — git gives diffs, review, offline a
 ### D-033 [N] The Balance Lab never writes
 `balance/balance-lab.html` is a read-only sandbox with "reset to data" and "copy params as JSON". Parameter edits are exploratory. The agent makes the actual data edits.
 
-### D-034 [N] Repo renamed to `valrune-shooter`
-Matches the GCP project. Was `valrune-invaders`.
+### D-034 [N] Repo renamed to `valrune-shooter`; local folder deliberately not
+GitHub repo and git remote are `valrune-shooter`, matching the GCP project.
+
+**The local working directory stays `C:\Users\bryan\valrune-invaders`.** This mismatch is
+intentional, not an oversight — do not "fix" it. Cursor keys chat history and workspace
+state to the folder path, and renaming it would strand this project's history for a purely
+cosmetic gain. Git is entirely unaffected.
 
 ---
 
