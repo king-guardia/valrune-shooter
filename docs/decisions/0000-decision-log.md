@@ -618,13 +618,46 @@ outruns nothing. If it narrows, shooting while advancing feels wrong — you cha
 bullets, forward shots crawl and backward shots race. Preserve the ratio if either number
 moves.
 
-### D-070 [R] Free crit chance drops to 2%
-v0's 5% baseline existed so crit-triggered nodes are not dead on a fresh account, and that
-reasoning holds — but 5% was priced against 2 shots/sec. At the new 3.0 shots/sec, **2%
-still yields a crit every 17 seconds**, keeping those nodes alive while making an early
-crit an event. Line runs 2% → 10% (D-012).
+### D-070 [R] Crit chance ceiling drops to ~4%; the floor is unresolved
+At 10% and 15 shots/sec you get 1.5 crits per second, which is texture rather than a
+critical hit. The ceiling comes down to **~4%** — 15 × 4% is one crit every 1.7s.
 
-The PRD table must be regenerated for 1–10%; v0's covers 5–30% and is now useless.
+**The structural problem: crit frequency is `fire_rate × crit_chance`, and both scale up
+together**, so frequency scales multiplicatively. v0 swung 24× across the campaign. A
+0.05% floor would swing 400× and leave a new player **11 minutes between crits**, making
+every attunement crit effect invisible content for the early game — the exact failure the
+free baseline exists to prevent.
+
+Two candidate fixes, unresolved as **O-22**:
+
+- **A — raise the floor:** 1.0% base, 12 ranks × +0.25%, max 4.0%. Start is one crit per
+  33s, max one per 1.7s. Simple, familiar, still a 20× swing.
+- **B — denominate the line in crits per second**, deriving per-shot chance as
+  `target_rate / fire_rate`. Start 0.20/s, max 0.60/s. Attack speed stops secretly buying
+  crit frequency, and attunement crit effects fire on a cadence that can actually be
+  balanced. Unconventional, and the Hangar shows "0.35 crits/sec" instead of a percentage.
+
+Leaning **B**, because the attunement crit effects are authored content rather than a
+damage rounding error.
+
+Either way the PRD table is regenerated; v0's covers 5–30% and is useless.
+
+### D-072 [N] Projectiles inherit 25% of ship velocity
+```
+projectile_velocity = PROJECTILE_SPEED + 0.25 × (ship velocity along the firing axis)
+```
+
+Physically right and **free in balance terms** — travel time does not enter the offense
+model (D-028 counts uses × damage, not flight time), so this is pure feel.
+
+**Full inheritance breaks backward shots.** At maximum investment the ship moves 1800 u/s
+and projectiles fly 3200, so 100% inheritance yields a 1400 u/s backward shot — travelling
+*behind* a retreating player. That kills kiting, which is a core shooter tactic. At 50% it
+is sluggish; at 25% the relative speed is a healthy +950.
+
+Watch in M0: a slower backward projectile has longer to curve, so `homing` may make
+retreating shots *more* accurate, which is backwards. Fix if it bites is to scale homing
+correction by distance travelled rather than by elapsed time.
 
 ### D-071 [N] The Expanse is 6000 × 6000
 Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
@@ -649,6 +682,9 @@ cross at base speed.
 | O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
 | O-20 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it sets both the Expanse size and the projectile ratio. The most load-bearing feel number in the game | M0 |
 | O-21 | **`CLUSTERING = 2.0`.** Not answerable at a desk — becomes a Balance Lab slider and gets measured in M0. Every AoE valuation rides on it | M0 |
+| O-22 | **`crit_chance` floor — percentage, or crits-per-second?** See D-070. The only unresolved item here that is a desk decision rather than an M0 measurement | Phase 1b |
+| O-23 | **Is the 18° homing ceiling too steep?** A 36° cone is a third of the forward hemisphere. Left generous so M0 can dial back from "too much" rather than guess upward | M0 |
+| O-24 | **Homing plus velocity inheritance.** A slower retreating projectile has longer to curve, so backward shots may end up more accurate. Fix if real: scale correction by distance travelled, not elapsed time | M0 |
 
 **Resolved since last revision:** O-01 (D-058), O-07 (D-057), O-08 (D-058), O-09 (D-059),
 O-10 (D-061), O-14 (dissolved by D-063 — Assist Aim cut), O-16 (D-068), O-19 (D-065).

@@ -238,14 +238,46 @@ means a new player can already turn briskly and a maxed one gets two turns per s
 
 ### The projectile-to-ship speed ratio matters
 
-At 1000 u/s base, the Valrune crosses the screen width in 1.0s, its height in 2.2s.
+At 1000 u/s base, the Valrune crosses the screen width in 1.0s, its height in 2.2s. At
+2400 u/s a projectile crosses `dis4` in 0.67s.
 
-**Projectile speed must stay well above ship speed** — 2400 against 1000 is 2.4×. If it
-narrows, shooting while advancing feels wrong: you chase your own bullets, and forward
-shots appear to crawl while backward shots race. Any future change to either number should
-preserve roughly this ratio.
+**Projectile speed must stay well above ship speed.** 2400 against 1000 is 2.4× at base,
+narrowing to 1.8× at max (3200 against 1800). If it narrows further, shooting while
+advancing feels wrong: you chase your own bullets, forward shots crawl and backward shots
+race.
 
-At 2400 u/s a projectile crosses `dis4` in 0.67s.
+### Velocity inheritance — yes, but partial
+
+```
+PROJECTILE_INHERITANCE = 0.25    Starting point
+projectile_velocity = PROJECTILE_SPEED + 0.25 × (ship velocity along the firing axis)
+```
+
+Your idea is physically correct and free, in the sense that travel time does not enter the
+offense model (D-028 counts uses × damage, not flight time), so this is pure feel with no
+balance cost. Worth having.
+
+**But full inheritance breaks backward shots badly.** At maximum investment the ship moves
+1800 u/s and projectiles fly 3200:
+
+| Inheritance | Backward projectile | Relative to a ship moving 1800 |
+|---|---|---|
+| 100% | 1400 u/s | **−400 — the bullet travels behind you** |
+| 50% | 2300 u/s | +500, sluggish |
+| **25%** | 2750 u/s | +950, fine |
+| 0% | 3200 u/s | +1400 |
+
+At full inheritance you literally outrun your own bullets while retreating, which kills
+kiting — flying away while shooting back is a core shooter tactic and it should not be
+punished into non-existence.
+
+**25% gives the feel without the failure.** Charging forward makes shots snap; retreating
+makes them noticeably lazier; neither becomes unusable.
+
+One interaction to watch: a slower backward projectile spends longer in flight, and with
+`homing` it therefore gets more time to curve. Retreating shots would become *more*
+accurate, which is backwards. Worth checking in M0; the fix if it bites is to scale homing
+correction by distance travelled rather than by time.
 
 ---
 
@@ -293,28 +325,92 @@ Three consequences worth holding onto:
 
 | Line | Base | Ranks | Max | Note |
 |---|---|---|---|---|
-| `crit_chance` | **2%** | 8 × +1% | 10% | Free baseline, see below |
+| `crit_chance` | — | — | ~4% | **Unresolved — see below** |
 | `crit_damage` | 1.25× | 25 × +0.05 | 2.50× | Unchanged |
 | `attack_speed` | 3.0/s | 24 × +0.5 | 15.0/s | Per D-012 |
-| `homing` | 2° | 8 × +2° | 18° | See below |
+| `homing` | 2° | 8 × +2° | 18° | Ceiling likely too steep, see below |
 | `bulwark_flat` | 0 | 16 × +1 | 16 | See below |
 | `thrusters` | 1000 u/s | 20 × +40 | 1800 u/s | |
 | `gyros` | 420 °/s | 20 × +15 | 720 °/s | |
 | `velocity` | 2400 u/s | 5 × +160 | 3200 u/s | |
 
-### `crit_chance` — free baseline drops to 2%
+### `crit_chance` — the real problem is that it multiplies with fire rate [OPEN]
 
-v0 gave 5% free so that crit-triggered nodes are not dead on a fresh account. That
-reasoning still holds, but 5% was priced against 2 shots/sec. **At 3.0 shots/sec a 2%
-baseline still produces a crit every 17 seconds**, which keeps those nodes alive while
-making an early crit feel like an event.
+Your instinct is right: at 10% and 15 shots/sec you get 1.5 crits per second, which is not
+a critical hit, it is a texture. But the numbers you proposed break the other end, and the
+underlying issue is structural.
 
-The PRD constant table must be regenerated for the 1–10% range (D-012). v0's table covers
-5–30% and is now useless.
+**Crit frequency is `fire_rate × crit_chance`, and both scale up together.** So crit
+frequency scales multiplicatively across the campaign, which is why every version of this
+has felt wrong:
+
+| | Fire rate | Crit chance | Crits/sec | One crit every | |
+|---|---|---|---|---|---|
+| **v0** start | 2.0 | 5% | 0.10 | 10s | |
+| **v0** max | 8.0 | 30% | 2.40 | 0.4s | 24× swing |
+| **Your proposal** start | 3.0 | 0.05% | 0.0015 | **11 minutes** | dead |
+| **Your proposal** max | 15.0 | 4% | 0.60 | 1.7s | 400× swing |
+
+At 0.05% a new player goes **several entire contracts without a single crit.** Every
+attunement crit effect — a core mechanic, one per element in `attunement_table.csv` — would
+be invisible content for the whole early game. That is the exact failure v0's free 5%
+existed to prevent.
+
+Your 4% ceiling is close to right: 15 × 4% is a crit every 1.7 seconds. It is the floor
+that needs raising, and there are two ways to do it.
+
+**Option A — raise the floor, keep percentages.**
+
+```
+crit_chance = 1.0% base, 12 ranks × +0.25%, max 4.0%
+```
+
+| | Crits/sec | One crit every |
+|---|---|---|
+| Start (3.0/s, 1%) | 0.03 | 33s |
+| Mid (9.0/s, 2.5%) | 0.22 | 4.4s |
+| Max (15.0/s, 4%) | 0.60 | 1.7s |
+
+Simple, and a crit stays a genuine event early. Still a 20× swing.
+
+**Option B — buy crits per second, not crit chance.**
+
+Since D-049 puts everything on PRD anyway, the line can be denominated in the thing you
+actually care about, and the per-shot chance derived:
+
+```
+crit_chance_per_shot = target_crits_per_sec / fire_rate
+```
+
+| | Target | One crit every |
+|---|---|---|
+| Start | 0.20/s | 5s |
+| Max | 0.60/s | 1.7s |
+
+**Crit frequency becomes designable and stops exploding.** Buying attack speed no longer
+secretly buys crit frequency, so the two lines stop compounding. Attunement crit effects
+fire on a predictable cadence you can actually balance against, which matters because
+those effects are authored content, not a damage rounding error.
+
+The cost: it is unconventional, the Hangar has to display "0.35 crits/sec" instead of a
+percentage, and players who expect attack speed to boost everything may find it
+surprising.
+
+**I lean B**, because the attunement crit effects are real content and Option A still
+leaves them 20× more frequent at the end than the start. But A is the safe, familiar
+choice and there is nothing wrong with it.
+
+Either way the PRD table must be regenerated — v0's covers 5–30% and is now useless.
 
 ### `homing` (D-060)
 
-At 18° a target anywhere in a 36° cone gets hit — forgiving without being auto-aim.
+At 18° a target anywhere in a 36° cone gets hit. **That ceiling is probably too steep** —
+your read, and I agree. A 36° cone is a third of the forward hemisphere, which starts to
+feel like the game is playing itself rather than being forgiving.
+
+The ladder is easy to shorten once it is testable: dropping to 6 ranks caps at 14°, and
+5 ranks caps at 12°. **Left at 18° so M0 tests the generous end** — it is easier to feel
+"this is too much" and dial back than to guess where the line is from a desk.
 
 **The 2° free baseline mirrors the free crit**, for a different reason with the same shape:
 rate-based rotation plus screen-relative movement means a new player is fighting two axes
@@ -379,5 +475,7 @@ Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 |---|---|---|
 | 1 | **`CLUSTERING = 2.0`** is a guess and every AoE valuation rides on it. Not answerable at a desk — it becomes a slider in the Balance Lab and gets measured in M0 | M0 |
 | 2 | **Expanse at 6000²** — 6s to cross at base speed. A torus too large stops reading as a torus | M0 |
-| 3 | **`HOMING_BASE`** — 0° or 2°? | M0 |
+| 3 | **`HOMING_BASE`** — 0° or 2°? And is the 18° ceiling too steep? | M0 |
 | 4 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it drives the Expanse size and the projectile ratio | M0 |
+| 5 | **`crit_chance` — percentage floor, or crits-per-second?** Option A vs Option B above. The only one of these that is a desk decision | Phase 1b |
+| 6 | **Homing plus velocity inheritance** may make retreating shots more accurate, since a slower projectile has longer to curve | M0 |
