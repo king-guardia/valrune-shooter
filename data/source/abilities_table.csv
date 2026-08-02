@@ -1,0 +1,264 @@
+Element 1,Element 2,Element 3,Elements Required,Damage Type,Buff/Debuff,Type,Node Type,Ability Name,I,II,III
+Caustic,,,1,Caustic,Corrosion+,Passive,Single,corrosive breath,continual stream distance1 in front of the ship adds 1 stack of [corrosion] to any baddie in it for 1 second (more seconds in it add more stacks),distance increased to distance2; corrosion+,"if a baddie is in the breath in distance1 for .1 seconds, it gets max stacks of corrosion+"
+Chrono,,,1,N/A,N/A,Passive,Single,foresight,elites have their actions telegraphed 1 second before they go off,elites and minibosses have actions telegraphed for 1 second,"elites, bosses, and minibosses have actions telegraphed 1.5 sec ahead"
+Cryo,,,1,Cryo,N/A,Passive,Single,cold heart,enemies within radius 1 of player take n extra damage as cryo type when they are hit from a basic attack or crit,more damage,"increase damage; radius_2, all damage sources"
+Ether,,,1,N/A,Evasion+,Passive,Single,phase,you always have evasion,you always have evasion+,you always have evasion++
+Forge,,,1,N/A,N/A,Passive,Single,thick hull,you have n more hp (+100 total),more hp (+250 total),even moar hp (+500 total)
+Gamma,,,1,Gamma,N/A,Passive,Single,laser sight,a thin green laser line (like a laser sight from a gun) touches the nearest baddie on screen. laser sight will move to whichever baddie is nearest. this baddie takes + extra gamma damage from shots,the baddie takes the extra damage from all sources,even more damage from all sources
+Plasma,,,1,Plasma,N/A,Passive,Single,flame tail,the ship leaves a tailing flame area of width_1 tailing from its stern; fades over 2 seconds; enemies take plasma damage every .2 ticks,more damage in flame area,"more damage in flame area, width_2"
+Void,,,1,N/A,Gravity+,Passive,Single,vacuum,"enemies within r3 of ship are pulled into r2 (enough for basic enemies to get out with great effort, fast enemies would have noticable difference still but not struggle)",enemies within r3 get [gravity] to r2,"enemies within r3 get [gravity] to r2, enemies in r2 are [gravity+] into r1; baddies pulled into or already in r1 are [gravity+] within radius 1 and take void damage"
+Volt,,,1,Volt,Shock+,Passive,Single,static touch,"when a baddie gets within radius_1 of the player, they receive shock and also take n damage after the shock debuff is applied; passive ability goes on a 5 second cooldown",more damage; shock+,"more damage, all radius measure goes to r2; passive has 2 charges on 5 second cooldown"
+Caustic,Chrono,,2,,,Passive,Dual,,,,
+Caustic,Chrono,,2,N/A,MaxHP_Loss+,Active,Dual,Time Degradation,each target you hit for 2 seconds receives MaxHP_Loss for 10 seconds,each target you hit for 3 seconds receives MaxHP_Loss+ for 15 seconds,each target you hit for 4 seconds receives MaxHP_Loss+ for 30 seconds
+Caustic,Cryo,,2,N/A,N/A,Passive,Dual,immunity,you cannot be affected by [burn] or [corrosive],"you cannot be affected by burn, corrosion, stagger, or shock","you cannot be affected by any debuff, including the + form of debuffs"
+Caustic,Cryo,,2,,,Active,Dual,,,,
+Caustic,Ether,,2,Caustic,N/A,Passive,Dual,Rot Burst,"any baddies that die while having [corrosion] detonate on death, dealing n caustic damage in a small radius",more damage,"even more damage, radius_1"
+Caustic,Ether,,2,Caustic,"Corrosion, Poison",Active,Dual,Contagion,"a caustic wisp launches to the nearest baddie; this baddie gets 1 stack of corrosion and poison; when the baddie dies, the caustic wisp leaves and carries the stacks to a new baddie within radius_1 of the initial that died; this caustic wisp will keep hopping until it no longer can (likely when the wave dies and theres nowhere to hop, before the next wave starts)",3 stacks of corrosion and poison,max corrosion and poison stacks; two caustic wisps leave and hit two new targets in continual propogation by two's instead of 1
+Caustic,Forge,,2,Caustic,N/A,Passive,Dual,corrosive exhaust,"more exhaust ports from toxic burning fuel, one in the bow, starboard, and port. out to a distance_1; enemies in the blast take caustic damage, and are pushed continually (so would slow movespeed if the baddies speed was greater than the push)",more caustic damage,more caustic damage
+Caustic,Forge,,2,,,Active,Dual,,,,
+Caustic,Gamma,,2,Caustic,Poison,Passive,Dual,Radiation Poisoning,any enemy that spends .5 seconds in radius_1 of you gets a stack of poison (an extra stack for more time spent in the radius),any enemy that spends .5 seconds in radius_1 of you gets a stack of poison,any enemy that spends .5 seconds in radius_1 of you gets a stack of poison+
+Caustic,Gamma,,2,,,Active,Dual,,,,
+Caustic,Plasma,,2,Caustic+Plasma,,Passive,Dual,double dragon,"flame and caustic both follow from stern for caustic+plasma damage, and both continual stream out to a distance2",more damage in area,baddies get burn and corrosion
+Caustic,Plasma,,2,Plasma,,Active,Dual,greek fire (i want a better name but the idea of this came from greek fire),"a hot bar of caustic hits and can penetrate to hit an extra enemy, dealing large plasma damage",more damage; target gets burn,"more plasma damage, target gets burn that re-applies every 4 seconds"
+Caustic,Void,,2,Caustic,Gravity,Passive,Dual,Caustic Implosion,"when a target reaches max stacks of caustic or poison, and you deal damage to it, all caustic and poison stacks go away and radius_1 of baddies near the target get [gravity] into the target, then the target and all baddies in a close radius take n caustic damage per stack that was removed
+
+Special: If the target was affected by Contagion, and the stack removal damage kills the target, then the stacks that blew up are carried by Contagion's Caustic Wisp","more damage per stack, gravity pull duration is longer ",all baddies in the radius 1 take the damage; more damage per stack
+Caustic,Void,,2,,,Active,Dual,,,,
+Caustic,Volt,,2,Caustic,,Passive,Dual,chain shot,"your attacks will bounce a caustic projectile directly to an additional target within radius 1 of the first for full damage (if an attack pierces, then it bounces off the second hit when the projectile would normally end; i think that behavior would be easier to code)",the caustic projectile bounces a second time,caustic projectile now bounces 4 times
+Caustic,Volt,,2,,"Corrosion, Poison, Shock",Active,Dual,Corroded Wires,"you toss out a wire net at a distance 2, of a radius 1. all baddies in the net are prevented from moving out of the netted area, but will move randomly and freely inside. netted baddies take corrosion and poison stack every 1 second; also recieve shock while inside; lasts 2 seconds",lasts 3 seconds,added stack every .75 seconds; shock+ for those inside
+Chrono,Cryo,,2,,,Passive,Dual,slow time,"when [left panel] is [idle] (idle meaning, the left thumb is lifted), [game speed] reduces by n% for dur or when left thumb presses again. triggers c [cooldown time] once dur ends.
+
+(right panel still works, so the ability button can send an ability, the ship can rotate facing position, your own cooldowns are the same, durations or status ailment times on you are the same as its relative to you)","when [left panel] is [idle], [game speed] reduces by n+y% triggers c [cooldown time]","when [left panel] is [idle], [game speed] stops triggers c [cooldown time].
+
+(in a time stop, all damage builds but doesnt apply til the very end of the time stop. once time starts again, then all damage applies, and baddies can die.)
+
+(i see this being a possible glitch or bug when a boss dies which would cause end of level, or last enemy of a stage, or one wave to the next wave. need to be careful with how end sequences are determined and coded, and how this is coded)"
+Chrono,Cryo,,2,Chrono,Slow,Active,Dual,second hand,"a long icicle spear (stretches to the edge of radius_2) from the ship to its end point, rotates around the ship so every second it reaches back to 12-oclock position (like the second hand of a clock); any baddie hit by the spear takes n chrono damage and slow",more damage,"more damage; adds a smaller hand that rotates from the radius_1 distance, goes 4xs faster, but does half damage as the other one"
+Chrono,Ether,,2,N/A,N/A,Passive,Dual,Desync,enemy projectiles move at .75 speed when reaching a close radius of you,projectiles move at .5 speed in close radius,"projectiles now move at .5 speed when within radius_1, and .9 speed within radius_2"
+Chrono,Ether,,2,N/A,"damage immune, untargetable, stasis",Active,Dual,Ghost Frame,"you freeze yourself in time; you get [damage immune], and [untargetable], and [stasis], for 3 seconds; all your cooldowns and health regen tick at 2x speed;","you freeze yourself in time; you get [damage immune], and [untargetable], and [stasis], for 3 seconds; all your cooldowns and health regen tick at 3x speed","you freeze yourself in time; you get [damage immune], and [untargetable], and [stasis], for 3 seconds; all your cooldowns and health regen tick at 5x speed; removes debuffs at the end of the ability's duration"
+Chrono,Forge,,2,N/A,N/A,Passive,Dual,Delay the Present,"damage you take is delayed over 3 second, instead of immediate
+
+Note: Damage Immune will absorb any damage if it would hit while the damage immune buff is on",damage you take is delayed over 5 seconds,damage you take is delayed over 8 seconds.
+Chrono,Forge,,2,,,Active,Dual,,,,
+Chrono,Gamma,,2,,,Passive,Dual,,,,
+Chrono,Gamma,,2,N/A,"Radiate+, Slow+",Active,Dual,Half Life,"you get radiate, but then get slow when it ends","you get radiate+, but then get slow when it ends","you get radiate+; you get slow, and any baddies in radius 2 of you get slow+"
+Chrono,Plasma,,2,,,Passive,Dual,overclock,your fire/shoot rate increases by x% (i tihnk we keep this one as a percent); all your cooldowns are decreased by y%,"faster attacks, decreased cooldown","faster attacks, decreased cooldown"
+Chrono,Plasma,,2,,,Active,Dual,,,,
+Chrono,Void,,2,Chrono+Void,N/A,Passive,Dual,spacetime manipulation,all range and radius effects from you are 1.25x normal,all range and radius effects from you are 1.5x normal; they deal an extra n chrono+void damage if the targets are in the increased radius (beyond the normal radius),"all range and radius effects from you are increased by 2x normal, more chrono+void damage"
+Chrono,Void,,2,Chrono,"Slow, Stasis",Active,Dual,retrograde,"a large triangle (radius 2, point down) expands from teh bow of the ship (ship bow at triangle point); after it takes .1 second to expand, it hits in the area; any baddies hit get [stasis], are sent back on their path (reversed forced movement) for 2 seconds, and they take n chrono damage for every n units moved back",more damage per movement,more damage; baddies get [slow] at the end
+Chrono,Volt,,2,Volt,Shock,Passive,Dual,volt down,"when you tap left to have your ship move to ready position, you become becomes a lightning bolt with damage immune, reaching ready position instantly, and damages baddies in its path for n damage of volt type",does more damage,"more damage, enemies hit get [shock]"
+Chrono,Volt,,2,Volt,N/A,Active,Dual,volt up,"you teleport forward distance_2, and your facing direction changes to point at the nearest baddie; your distance is shortened if there is a baddie occupying the max distance spot; in your travel, you become a lightning bolt with [damage immune], reaching ready position instantly, and damages baddies in its path for n damage of volt type",teleport is now a distance 3,"more damage, will damage everything in a radius_1 of entry and exit of the teleport"
+Cryo,Ether,,2,,,Passive,Dual,,,,
+Cryo,Ether,,2,N/A,N/A,Active,Dual,poltergiest,"a baddie ship becomes possessed by a poltergiest. it immediately 'dies', and you receive a [baddie template] ship in one of your extra ship slots; it deals ether damage; 
+
+note: this ability does not target or affect elites, bosses, or minibosses","gets 2 guns (same gun math as player, but all shots are ether)",gets 3 guns
+Cryo,Forge,,2,,,Passive,Dual,,,,
+Cryo,Forge,,2,Cryo+Forge,,Active,Dual,Comet,"a large comet of ice blasts forward from this ship, pushing back baddies that it hits along the way, out to a distance 2; deals cryo+forge damage; heavy damage","bigger damage, more push","instead of one large comet, a 'meteor shower' of smaller cryo comets blast from the ship (lets do 7), each dealing 1/3rd of the bigger comet's damage"
+Cryo,Gamma,,2,Gamma,Rime+,Passive,Dual,cold fusion energy,you get rime; it replenishes automatically on a 20 second cooldown,"10 second cooldown; if the enemy was more than distance_2 from you, then it takes bonus gamma damage","rime+; always on/reapplies every 5 seconds (in case something would remove buffs, it reapplies after 5 seconds); more gamma damage"
+Cryo,Gamma,,2,,,Active,Dual,,,,
+Cryo,Plasma,,2,Cryo,Burn,Passive,Dual,cold plasma tail,the ship leaves a [cryo cold damage area] tailing from its [stern]; fades over n duration if ship not in area (thinking 2 seconds fading tail); enemies that enter the area receive burn status; width_1,"more damage in cold area, tail is 3 seconds long","more damage in cold area, tail is 5 seconds long, width_2"
+Cryo,Plasma,,2,,,Active,Dual,,,,
+Cryo,Void,,2,Void,N/A,Passive,Dual,cold space,"two small projectiles shoot from the bow, one at dist_1 and the other at dist 2; they then stretch into horizontal lines (portals); a baddie that touches one is warped to the other (can only get warped once); it takes void damage when it does; boss and miniboss immune to the movement, but still take damage if they touch a line",greater damage,"greater damage, three lines, target is randomly assigned one of the other two lines it ends at if it goes through"
+Cryo,Void,,2,,,Active,Dual,,,,
+Cryo,Volt,,2,,,Passive,Dual,,,,
+Cryo,Volt,,2,Volt,N/A,Active,Dual,Chill Arc,"an arcing blast of cryo of n width extends forward to distance_1, marking targets with a chill visual; once the blast finishes, all 'chilled' targets get chain lightning'ed originating from ship to closest>closest>etc until all chilled targets have been hit exactly once; volt damage",goes to distance_2,goes to distance_3; more damage
+Ether,Forge,,2,,,Passive,Dual,,,,
+Ether,Forge,,2,Forge,Ethereal,Active,Dual,debris cloud,"you drop a radius_1 cloud field on the ground; if you are in the cloud, you are ethereal; baddies take forge damage if they enter the cloud","lasts longer, slightly more damage","lasts longer, slightly more damage"
+Ether,Gamma,,2,,,Passive,Dual,Ghostlight,baddie invisible enemies become visible if within radius_1 of you,baddie invisible enemies become visible if within radius_2 of you,you can always see invisible baddies
+Ether,Gamma,,2,Ether,N/A,Active,Dual,Spectral Lance,"a thin beam shoots out to distance_3 from the ship, piercing everything in its path for ether damage; enemies beyond distance_2 take extra damage",greater damage,"everything beyond distance 1 takes extra damage, beyond distance 2 even more damage; enemies within n units of max range take massive damage"
+Ether,Plasma,,2,Plasma,N/A,Passive,Dual,Ghostflame,you have an aura of ghostly flame in radius_near your ship; it deals a high amount of [plasma] damage to anything that touches it,more damage,more damage
+Ether,Plasma,,2,Ether,Ethereal+,Active,Dual,Superposition,"you enter an ethereal state for 2 seconds. when you phase through a baddie, they take n ether damage","you enter an ethereal state for 3 seconds. when you phase through a baddie, they take n ether damage",4 second duration; ethereal+; cooldown shortened
+Ether,Void,,2,,,Passive,Dual,,,,
+Ether,Void,,2,,,Active,Dual,,,,
+Ether,Volt,,2,,,Passive,Dual,,,,
+Ether,Volt,,2,,,Active,Dual,Resonant Afterimage,"when you are hit, you become ethereal for 2 seconds and launch a volt blast to your attacker","ethereal for 3 seconds, volt blast does more damage",two volt blasts launch; ethereal for 4 seconds
+Forge,Gamma,,2,,,Passive,Dual,,,,
+Forge,Gamma,,2,Forge+Gamma,Stagger,Active,Dual,mini nukes,"you fire 2 nukes ahead, which go a max of dist_4 (off screen); if it hits a target, it deals damage in a radius_short of the target, dealing forge+gamma type; if a target was just hit with a nuke (in the last 3 seconds), then it takes an extra n damage for the second nuke, then n+n for the third nuke if hit a third time","3 nukes, n+ damage slightly higher","4 nukes, n+ damage slightly higher; each hit gives stagger"
+Forge,Plasma,,2,,,Passive,Dual,,,,
+Forge,Plasma,,2,Forge,Burn,Active,Dual,mines,leaves 3 landmines (60 degrees triangle position where points hit radius1) on the map; player cannot trigger landmines; landmines have a short radius explosion and short push away when triggered; forge damage,"5 landmines drop, they deal more damage (shaped as a 5 point star at edges of radius1); pushed baddies are staggered","4 landmines at radius 2 drop (square points at radius 2), 3 at radius 1 (60 degree points at radius1), the blast is a radius 1 blast with small push; everything in a blast radius gets burn+ and stagger+"
+Forge,Void,,2,,,Passive,Dual,,,,
+Forge,Void,,2,Void,Stagger,Active,Dual,neutron stars,"3 black spinning orbs orbit the ship at radius_1, dealing n damage when they impact a baddie; orb is gone on impact; void damage; lasts n duration if orbs are not destroyed by end of duration",5 spinning orbs; more damage,"orbs last full duration, do not get destroyed on impact; getting hit by an orb causes stagger"
+Forge,Volt,,2, ,,Passive,Dual,,,,
+Forge,Volt,,2,Volt,N/A,Active,Dual,taser,you fire a taser at the nearest target; it receives [shock] while attached for n duration or if baddie exceeds distance_2 from the player; and it receives n damage every .2 seconds while attached to the taser,"target cannot move out of the distance_2 range; if it would, it instead stop (line is maxed out), or is towed (if the players movement would have caused the break); duration extended",launches 2 tasers; damage ticks every .15 seconds; a baddie can only be affected by 1 taser
+Gamma,Plasma,,2,,,Passive,Dual,,,,
+Gamma,Plasma,,2,Gamma+Plasma,N/A,Active,Dual,solar beam,"you fire a red hot laser, wide, out to distance_3 (max distance); deals gamma+plasma damage, pierces everything",two beams that deal .9 damage each,three beams that deal .8 damage each
+Gamma,Void,,2,N/A,N/A,Passive,Dual,dark photons,your crits do not deal reduced damage to the types itd be weak to,attacks and crits do not deal reduced damage to the types itd be weak to,none of your abilities deal reduced damaged to the types they'd be weak to
+Gamma,Void,,2,,,Active,Dual,,,,
+Gamma,Volt,,2,,,Passive,Dual,,,,
+Gamma,Volt,,2,Volt,N/A,Active,Dual,lightning storm,you send out a forked lightning from the bow; it chains up to 5 baddies; volt damage,"the chain hits up to 9 baddies, deals little more damage","deals little more damage, hits 14 baddies"
+Plasma,Void,,2,,,Passive,Dual,,,,
+Plasma,Void,,2,Plasma+Void,Gravity,Active,Dual,gravity explosion,"a black hole (radius_2) fires from the ship out to a distance_2, [gravity]'s baddies in along the path, pulling them towards radius_2 to radius_1; then stops at its full distance_2 and [gravity]'s baddies toward radius 1 for an extra .5 seconds; any enemy in a distance 1 take plasma+void damage ",more damage,"more damage; goes to a distance_3, enemies in radius_2 take damage as well"
+Plasma,Volt,,2,,,Passive,Dual,,,,
+Plasma,Volt,,2,Plasma+Volt,N/A,Active,Dual,plasmaball,"the ship launches a dist2 forward from the stern a glowing marble, which explodes when hits a baddie or if it reaches its distance of travel; for n damage to baddies in radius 1. damage is plasma+volt type","more damage, expands half damage to radius_2; radius_2","two fireballs launch, max damage to radius 2; fireballs overlap so that their r1's touch. the launch path is slightly left and slightly right in front of the ship (ie, 35 degree angle and -35 degree angle from ship bow); baddies in r1 also get burn if they survive"
+Void,Volt,,2,,,Passive,Dual,,,,
+Void,Volt,,2,Volt,N/A,Active,Dual,Space Fissures,"vertical lines of (pseudo random wavy path) of lightning shoot across the screen; they deal volt damage when touched, repeatedly every tic of .2 seconds",more damage,"slightly more damage, the lines are a wavy grid instead of vertical"
+Caustic,Chrono,Cryo,3,,N/A,Passive,Triple,Preservation,"every 3 seconds, the game will 'snapshot' your hp; if you drop below that snapshot amount, the game will heal towards it at a fast rate (should be a faster heal than the passive hp regen ability, but only a moderate chance you'd recover the damage; continual damage would mean each snapshot gets lower and lower)",snapshot is 4 seconds; you can go to a negative hp balance and not be dead; you only die if a snapshot happens that is a negative number,
+Caustic,Chrono,Cryo,3,,,Active,Triple,,,,
+Caustic,Chrono,Ether,3,,"Corrosion+, Poison+",Passive,Triple,Necrosis,"any caustic damage will give a baddie 1 stack of corrosion if it has none. A baddie carrying any [corrosion] or [corrosion+] gains 1 additional stack every 2 seconds on its own, up to max","every 1.5 seconds, and it also gains [poison], adds to poison or [poison+] stacks on the same timer;",
+Caustic,Chrono,Ether,3,,,Active,Triple,,,,
+Caustic,Chrono,Forge,3,,,Passive,Triple,,,,
+Caustic,Chrono,Forge,3,Caustic,"Corrosion+, Stagger+",Active,Triple,Rust,"A wave sweeps to distance_2 in front of the ship. Everything hit gets max [corrosion], and [stagger], and takes caustic damage scaled to how long that baddie has been alive this wave",distance_3; [corrosion+] and [stagger+]; more damage per second alive,
+Caustic,Chrono,Gamma,3,,,Passive,Triple,,,,
+Caustic,Chrono,Gamma,3,,,Active,Triple,,,,
+Caustic,Chrono,Plasma,3,,,Passive,Triple,,,,
+Caustic,Chrono,Plasma,3,,,Active,Triple,,,,
+Caustic,Chrono,Void,3,,,Passive,Triple,,,,
+Caustic,Chrono,Void,3,,,Active,Triple,,,,
+Caustic,Chrono,Volt,3,,Corrosion+,Passive,Triple,Electrolysis,Your [shock] chains now also apply 1 stack of [corrosion] to every baddie they touch.,chains apply [corrosion+] and hop one extra time to any radius_1 [slow] or [slow+] baddies.,
+Caustic,Chrono,Volt,3,,,Active,Triple,,,,
+Caustic,Cryo,Ether,3,,"Evasion+, Rime+, Poison",Passive,Triple,Solvent Skin,You always have [evasion]. Any attack you evade applies 2 stacks of [poison] to the attacker and gives you [rime] for 2 seconds.,"you gain evasion+, you get rime+ for 4 seconds",
+Caustic,Cryo,Ether,3,,,Active,Triple,,,,
+Caustic,Cryo,Forge,3,,,Passive,Triple,,,,
+Caustic,Cryo,Forge,3,,,Active,Triple,,,,
+Caustic,Cryo,Gamma,3,Caustic+Cryo+Gamma,"Rime+, Poison+",Passive,Triple,Cryo-Toxin,You have [rime] reapplied to you every 10 seconds. Your [rime] recoil shot also applies 1 stack of [poison]. Baddies beyond distance_2 that hit you take n extra recoil damage of caustic+cryo+gamma,"rime+, poison+",
+Caustic,Cryo,Gamma,3,,,Active,Triple,,,,
+Caustic,Cryo,Plasma,3,,,Passive,Triple,,,,
+Caustic,Cryo,Plasma,3,,,Active,Triple,,,,
+Caustic,Cryo,Void,3,,,Passive,Triple,,,,
+Caustic,Cryo,Void,3,,,Active,Triple,,,,
+Caustic,Cryo,Volt,3,,,Passive,Triple,,,,
+Caustic,Cryo,Volt,3,,,Active,Triple,,,,
+Caustic,Ether,Forge,3,,,Passive,Triple,Hunger Aura,"anytime a baddie dies within radius 1 of you, you heal for n",radius increased to 2,
+Caustic,Ether,Forge,3,,,Active,Triple,,,,
+Caustic,Ether,Gamma,3,,,Passive,Triple,,,,
+Caustic,Ether,Gamma,3,,,Active,Triple,,,,
+Caustic,Ether,Plasma,3,,,Passive,Triple,,,,
+Caustic,Ether,Plasma,3,,,Active,Triple,,,,
+Caustic,Ether,Void,3,,,Passive,Triple,,,,
+Caustic,Ether,Void,3,,,Active,Triple,,,,
+Caustic,Ether,Volt,3,,,Passive,Triple,,,,
+Caustic,Ether,Volt,3,,,Active,Triple,,,,
+Caustic,Forge,Gamma,3,,,Passive,Triple,,,,
+Caustic,Forge,Gamma,3,,,Active,Triple,,,,
+Caustic,Forge,Plasma,3,,,Passive,Triple,,,,
+Caustic,Forge,Plasma,3,,,Active,Triple,,,,
+Caustic,Forge,Void,3,Caustic+Void,Gravity+,Passive,Triple,Sinkhole,Baddies that die while carrying max [corrosion] leave a radius_near pit for 3 seconds that gives [gravity] to anything entering and deals caustic+void damage per tick,"radius_1, 5 seconds, [gravity+], more damage.",
+Caustic,Forge,Void,3,,,Active,Triple,,,,
+Caustic,Forge,Volt,3,,,Passive,Triple,,,,
+Caustic,Forge,Volt,3,,,Active,Triple,,,,
+Caustic,Gamma,Plasma,3,,,Passive,Triple,,,,
+Caustic,Gamma,Plasma,3,,,Active,Triple,,,,
+Caustic,Gamma,Void,3,,,Passive,Triple,,,,
+Caustic,Gamma,Void,3,Caustic+Gamma,"Gravity+, Poison",Active,Triple,Dirty Bomb,"fire a slow orb to distance_2 that gives [gravity] to baddies in radius_1 as it travels, dragging them along. On arrival it bursts: everything collected takes caustic+gamma damage and gets max [poison]","more damage, [gravity+], radius_2 burst",
+Caustic,Gamma,Volt,3,,,Passive,Triple,,,,
+Caustic,Gamma,Volt,3,,,Active,Triple,,,,
+Caustic,Plasma,Void,3,,,Passive,Triple,,,,
+Caustic,Plasma,Void,3,,,Active,Triple,,,,
+Caustic,Plasma,Volt,3,,,Passive,Triple,,,,
+Caustic,Plasma,Volt,3,,,Active,Triple,,,,
+Caustic,Void,Volt,3,,,Passive,Triple,,,,
+Caustic,Void,Volt,3,,,Active,Triple,,,,
+Chrono,Cryo,Ether,3,,"Evasion+, Slow, Ethereal",Passive,Triple,Timelapse,"You have [evasion]. Whenever you evade an attack, the attacker receives [slow] and you gain .5 seconds of [ethereal]",evasion+ also gives you 2 seconds off any cooldown and removes 2 seconds of any debuffs on you,
+Chrono,Cryo,Ether,3,,,Active,Triple,,,,
+Chrono,Cryo,Forge,3,,,Passive,Triple,,,,
+Chrono,Cryo,Forge,3,,,Active,Triple,,,,
+Chrono,Cryo,Gamma,3,,,Passive,Triple,,,,
+Chrono,Cryo,Gamma,3,Gamma,Radiate+,Active,Triple,Fallout,"You gain [radiate], then drop a radius_2 fallout zone at your position lasting 6 seconds. Baddies inside get [slow] and take gamma damage per tick; the zone's radius shrinks over its lifetime.","radiate+, lasts longer, more damage per tick",
+Chrono,Cryo,Plasma,3,,,Passive,Triple,,,,
+Chrono,Cryo,Plasma,3,Chrono-Cryo-Plasma,,Active,Triple,Thermal Lag,"Any damage you deal is applied 2 seconds late, but with extra chrono+cryo+plasma of n amount at application","the damage you deal is 1.5 seconds late, increased amount",
+Chrono,Cryo,Void,3,,,Passive,Triple,,,,
+Chrono,Cryo,Void,3,,,Active,Triple,,,,
+Chrono,Cryo,Volt,3,,,Passive,Triple,,,,
+Chrono,Cryo,Volt,3,,,Active,Triple,,,,
+Chrono,Ether,Forge,3,,,Passive,Triple,,,,
+Chrono,Ether,Forge,3,Chrono+Ether+Forge,"Stagger, Stasis, Damage_Immune",Active,Triple,,"You gain [stasis] + [damage immune] for 3 seconds. All damage that would have affected you during it is stored, then 1/2 of it is dealt to all baddies in radius_1 as chrono+ether+forge damage when it ends.","full damage in a radius, applies stagger",
+Chrono,Ether,Gamma,3,,,Passive,Triple,,,,
+Chrono,Ether,Gamma,3,,,Active,Triple,,,,
+Chrono,Ether,Plasma,3,,,Passive,Triple,,,,
+Chrono,Ether,Plasma,3,,,Active,Triple,,,,
+Chrono,Ether,Void,3,,,Passive,Triple,,,,
+Chrono,Ether,Void,3,Chrono+Ether+Void ,,Active,Triple,Dark Matter,"a large triangle (three points, where they would intersect) at radius2 appears in the middle of the screen. baddies are trapped inside, taking chrono+ether+void damage per tick every .2 seconds for 3 seconds and suffer slow","damage increases, becomes radius 3 sized triangle",
+Chrono,Ether,Volt,3,,,Passive,Triple,,,,
+Chrono,Ether,Volt,3,,,Active,Triple,,,,
+Chrono,Forge,Gamma,3,,,Passive,Triple,,,,
+Chrono,Forge,Gamma,3,,,Active,Triple,,,,
+Chrono,Forge,Plasma,3,,,Passive,Triple,,,,
+Chrono,Forge,Plasma,3,,,Active,Triple,,,,
+Chrono,Forge,Void,3,,,Passive,Triple,,,,
+Chrono,Forge,Void,3,Chrono+Void,Slow+,Active,Triple,Pocket Universe,"You seal a radius_1 bubble at your position for 4 seconds. Baddies in radius_2 get [gravity] into it; once inside they cannot exit (the wall blocks them) and take chrono+void damage every .2 seconds. You pass through the wall freely; while you're inside, your cooldowns tick at 2x.","radius_2 bubble, 6 seconds, more damage; baddies inside also get [slow+].",
+Chrono,Forge,Volt,3,,,Passive,Triple,,,,
+Chrono,Forge,Volt,3,Chrono+Forge+Volt,Stagger,Active,Triple,Deja Vu,"You fire an asteroid bolt that hits the nearest baddie and [stagger]s it. Every .5 seconds after, it re-arcs from initial baddie (or its dead body if it dies while this ability is active) to the next nearest baddie, staggering and damaging, for 3 seconds total, chrono+forge+volt type damage","more damage, lasts 4 seconds",
+Chrono,Gamma,Plasma,3,,,Passive,Triple,,,,
+Chrono,Gamma,Plasma,3,,,Active,Triple,,,,
+Chrono,Gamma,Void,3,,,Passive,Triple,,,,
+Chrono,Gamma,Void,3,Chrono+Gamma+Void,"Radiate+, Slow",Active,Triple,Aphelion,"You gain [radiate] and [slow]. A gravity beam extends from in front of the ship, its effect pulls baddies into the beam (instead of a central radius, just straight into the beam), out to a range 3. baddies in the beam take chrono+gamma+void damage",wider beam; more damage; you gain radiate+,
+Chrono,Gamma,Volt,3,,,Passive,Triple,Capacitor,your abilities cooldowns tick 10% faster if no baddie in a radius 1 of you,they tick 20% faster if no baddie in radius 1,
+Chrono,Gamma,Volt,3,,,Active,Triple,,,,
+Chrono,Plasma,Void,3,,,Passive,Triple,,,,
+Chrono,Plasma,Void,3,Chrono+Plasma+Void,Burn+,Active,Triple,Warp Speed,"You warp from your position to the far edge of the screen instantly with [damage immune] during transit, then to the other side of the screen, then to the middle; each end point of a warp checks if there is a baddie in the space, and will shunt the journey shorter if there is a baddie in the way. Everything in width_1 of your path takes chrono+plasma+void damage and [burn]. The vacuum of your wake gives [gravity] to baddies within radius_1 of the path line, pulling them into the trail for .5 seconds after.",more damage; the trail lingers 2 seconds as a plasma area; [burn+].,
+Chrono,Plasma,Volt,3,,,Passive,Triple,,,,
+Chrono,Plasma,Volt,3,,,Active,Triple,,,,
+Chrono,Void,Volt,3,,,Passive,Triple,,,,
+Chrono,Void,Volt,3,,,Active,Triple,,,,
+Cryo,Ether,Forge,3,,,Passive,Triple,,,,
+Cryo,Ether,Forge,3,,,Active,Triple,,,,
+Cryo,Ether,Gamma,3,,,Passive,Triple,,,,
+Cryo,Ether,Gamma,3,,,Active,Triple,,,,
+Cryo,Ether,Plasma,3,,,Passive,Triple,,,,
+Cryo,Ether,Plasma,3,,,Active,Triple,,,,
+Cryo,Ether,Void,3,,Ethereal,Passive,Triple,Event Horizon,"whenever you are in a space that is causing [gravity] or [gravity+] to baddies, you gain [ethereal]",the [ethereal] will last for 2 more seconds after leaving a space that is causing [gravity] or gravity+,
+Cryo,Ether,Void,3,,,Active,Triple,,,,
+Cryo,Ether,Volt,3,Ether+Volt,,Passive,Triple,Static Ghost,"Whenever you have [ethereal or +] or [evasion or +] buff, a wandering electric ghost will be on the board, floating from baddie to baddie and giving them shock","ghost gives shock+, if at least 2 baddies have shock or shock+ on screen, then the ghost will attack one of them, minimal damage at .5 your attack speed (but triggering the shock or shock+); the ghost deals ether+volt damage",
+Cryo,Ether,Volt,3,,,Active,Triple,,,,
+Cryo,Forge,Gamma,3,,,Passive,Triple,,,,
+Cryo,Forge,Gamma,3,,,Active,Triple,,,,
+Cryo,Forge,Plasma,3,,,Passive,Triple,,,,
+Cryo,Forge,Plasma,3,Cryo+Forge+Plasma,"Burn+, Stagger+",Active,Triple,Steam Blast,"launches a blue-red marble up to dist2, which blows up in steam to a radius3, giving [burn] to all enemies in the blast, and making them [stagger]","all enemies on the screen get [burn+] and [stagger+], the marble launches from the ship to the center of the screen, everything on screen takes a little damage of cryo+forge+plasma",
+Cryo,Forge,Void,3,Cryo+Forge+Void,Gravity,Passive,Triple,Wreckage Field,Every baddie that dies leaves a piece of debris that persists 6 seconds. Debris blocks enemy projectiles and deals cryo+forge+void damage to baddies that collide with it.,more damage; each debris piece has a close radius [gravity],
+Cryo,Forge,Void,3,,,Active,Triple,,,,
+Cryo,Forge,Volt,3,,,Passive,Triple,,,,
+Cryo,Forge,Volt,3,,,Active,Triple,,,,
+Cryo,Gamma,Plasma,3,,,Passive,Triple,,,,
+Cryo,Gamma,Plasma,3,,,Active,Triple,,,,
+Cryo,Gamma,Void,3,,,Passive,Triple,,,,
+Cryo,Gamma,Void,3,,,Active,Triple,,,,
+Cryo,Gamma,Volt,3,,,Passive,Triple,,,,
+Cryo,Gamma,Volt,3,,,Active,Triple,,,,
+Cryo,Plasma,Void,3,,,Passive,Triple,,,,
+Cryo,Plasma,Void,3,,,Active,Triple,,,,
+Cryo,Plasma,Volt,3,,,Passive,Triple,,,,
+Cryo,Plasma,Volt,3,,,Active,Triple,,,,
+Cryo,Void,Volt,3,,,Passive,Triple,,,,
+Cryo,Void,Volt,3,,,Active,Triple,,,,
+Ether,Forge,Gamma,3,Ether,,Passive,Triple,hologram,"you have a hologram of yourself, that hovers in the first empty ally slot. it deals .15 of your damage as ether, does not use abilities, and goes away if it gets hit. comes back automatically after cooldown period. it is not capably of being affected by status ailments.
+
+if your hologram is alive, and the next hit would kill you, then the hologram takes the hit. hologram has 5% of your hp","hologram deals .25 damage, has 10% of your hp; it also activates abilities when you do; activated abilities from hologram are also .25 damage, deal ether damage instead of the original type, and do not apply any effects or status ailments - they are damage only",
+Ether,Forge,Gamma,3,,,Active,Triple,,,,
+Ether,Forge,Plasma,3,,,Passive,Triple,,,,
+Ether,Forge,Plasma,3,,,Active,Triple,,,,
+Ether,Forge,Void,3,,,Passive,Triple,,,,
+Ether,Forge,Void,3,Void,MaxHP_Loss+,Active,Triple,Deconstruction,"Target the nearest baddie. Its structure is unmade: shields are stripped, it receives [MaxHP_Loss] for 15 seconds, and it takes void damage that ignores all type weaknesses.",maxhp_loss+; removed max HP is dealt as void damage to all baddies in radius_1,
+Ether,Forge,Volt,3,,,Passive,Triple,,,,
+Ether,Forge,Volt,3,,,Active,Triple,,,,
+Ether,Gamma,Plasma,3,Gamma+Plasma,Evasion++,Passive,Triple,Celestialize,"After 10 seconds without being hit, you ignite: gain [evasion+], and your basic attacks become piercing beams dealing bonus gamma+plasma damage at distance_2 or beyond. Lost on being hit, re-earned after 10 clean seconds.","Evasion++, more damage at distance",
+Ether,Gamma,Plasma,3,,,Active,Triple,,,,
+Ether,Gamma,Void,3,,,Passive,Triple,,,,
+Ether,Gamma,Void,3,,,Active,Triple,Soul Drain,"all baddies in radius 1 have their lifeforce pulled, suffering maxhp_loss, while you get maxhp_gain; effects last 10 seconds","all baddies in radius 1 have their lifeforce pulled, suffering maxhp_down+, while you get maxhp_gain+; effects last 20 seconds",
+Ether,Gamma,Volt,3,Ether,"Stasis, Damage_Immune",Passive,Triple,Astral Projection,"You gain [stasis] + [damage immune] and a controllable ghost of your ship flies free for 4 seconds, dealing .4 of your damage as ether and ignoring shields. On expiry the ghost returns to you.","lasts 6 seconds, all damage you deal is .6, on expiration your ship zips to your current position, instead of the projection zipping back to the main ship position",
+Ether,Gamma,Volt,3,,,Active,Triple,,,,
+Ether,Plasma,Void,3,Ether+Plasma+Void,Gravity,Passive,Triple,Soul Pyre,Any baddie that has burn or burn+ also has a field of [gravity] around it at a near radius; the target baddie does not get this gravity. Baddies that die with burn or burn+ leave a stationary flame in a small area for 4 seconds that deals ether+plasma+void damage to anything entering the area; damage ticks every .2 seconds that baddie(s) in contact with the area,more damage; increase to radius_1; the burning ground will gravitate (move) steadily to the nearest baddie within a radius_2,
+Ether,Plasma,Void,3,,,Active,Triple,,,,
+Ether,Plasma,Volt,3,,,Passive,Triple,,,,
+Ether,Plasma,Volt,3,Plasma+Volt,Shock,Active,Triple,Ball Lightning,"You release a slow orb that drifts forward and passes through everything (no collision), dealing plasma+volt damage per tick to anything overlapping it and applying [shock], move out to a distance_3","two orbs launch and +-30 degrees of the ships bow, more damage",
+Ether,Void,Volt,3,,,Passive,Triple,,,,
+Ether,Void,Volt,3,,,Active,Triple,,,,
+Forge,Gamma,Plasma,3,,,Passive,Triple,,,,
+Forge,Gamma,Plasma,3,,,Active,Triple,,,,
+Forge,Gamma,Void,3,,,Passive,Triple,,,,
+Forge,Gamma,Void,3,Gamma+Void,,Active,Triple,Raise Dead,"The 2 most recent baddies to die within radius_2 reanimate as irradiated husks in your extra ship slots for 8 seconds. They deal .2 of your damage as gamma+void, ignore your abilities' effects","3 husks, 12 seconds, .3 damage",
+Forge,Gamma,Volt,3,Volt,,Passive,Triple,Grounded,"Damage you take is reduced by n if it came from distance 3, away, n-y if from distance 2.","the damage reduction is higher, and a volt of lightning jumps from you when you are hit and hits the nearest baddie for the damage that was reduced as volt type",
+Forge,Gamma,Volt,3,,,Active,Triple,,,,
+Forge,Plasma,Void,3,,,Passive,Triple,,,,
+Forge,Plasma,Void,3,,,Active,Triple,,,,
+Forge,Plasma,Volt,3,Forge+Plasma+Volt,,Passive,Triple,Overflowing Power,"damage you deal above what was needed to kill a baddie is 'banked'. once the bank reaches n amount, a homing missile fires at the nearest baddie and deal it the banked damage as forge+plasma+volt type","greater banked amount, over damage is stored with a +n amount each time you kill (must bank at least 1 damage to get the +n amount)",
+Forge,Plasma,Volt,3,,,Active,Triple,,,,
+Forge,Void,Volt,3,,,Passive,Triple,,,,
+Forge,Void,Volt,3,,,Active,Triple,,,,
+Gamma,Plasma,Void,3,,,Passive,Triple,,,,
+Gamma,Plasma,Void,3,,,Active,Triple,,,,
+Gamma,Plasma,Volt,3,Gamma+Plasma+Volt,,Passive,Triple,Overcharge,"When you crit, you store a charge. At 10 charges, a piercing beam from the bow to a distance_3 is released that lasts 1.5 seconds, dealing gamma+plasma+volt damage to everything in its line. all charges are consumed.","7 charges to trigger., more damage",
+Gamma,Plasma,Volt,3,,,Active,Triple,,,,
+Gamma,Void,Volt,3,,,Passive,Triple,Dark Current,"[shock] currents from baddies can jump through you. when they do, they heal you instead of damage you, and get one extra hop from you, dealing damage to another baddie. you can only get jumped to once per shock proc","more heal, shocks from you will arc to 3 baddies in a radius_2 of you",
+Gamma,Void,Volt,3,,,Active,Triple,,,,
+Plasma,Void,Volt,3,Plasma+Volt,Gravity,Passive,Triple,Torn Space,"a tear in space follows you as you fly around, in a 3 second fading tail. baddies that touch it take plasma+volt damage every tick","4 second tail, baddies close to the fissure get [gravity] into it",
+Plasma,Void,Volt,3,Plasma+Volt,Gravity,Active,Triple,Sundered Sky,"Three fissures tear open across the screen at random angles for 3 seconds, dealing plasma+volt damage every tick (.2 seconds) to anything touching them.","five fissures, more damage per tick, baddies close to a fissure gets [gravity] to it",

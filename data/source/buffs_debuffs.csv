@@ -1,0 +1,36 @@
+element,status,type,duration,affect,max stacks,Boss Immune,Miniboss Immune,Elite Immune
+Caustic,corrosion,debuff,10 seconds,takes +n more damage as caustic whenever it takes damage from something else (can tick max 1/second),5,TRUE,TRUE,TRUE
+Caustic,corrosion+,debuff,10 seconds,takes +y more damage as caustic whenever it takes damage from something else (can tick max 1/second),5,FALSE,FALSE,FALSE
+Caustic,poison,debuff,10 seconds,target deals -n damage with basic attacks,5,TRUE,TRUE,TRUE
+Caustic,poison+,debuff,10 seconds,target deals -y damage with any ability or attack,5,FALSE,FALSE,FALSE
+Chrono,slow,debuff,3 seconds,moves at .85 speed,n/a,TRUE,TRUE,TRUE
+Chrono,slow+,debuff,3 seconds,moves and attacks at .65 speed,n/a,TRUE,TRUE,FALSE
+Cryo,rime,buff,variable,enemies that hit you get an ice-recoil shot back at them for n cryo damage,n/a,FALSE,FALSE,FALSE
+Cryo,rime+,buff,variable,enemies that hit you get an ice-recoil shot back at them for y cryo damage,n/a,FALSE,FALSE,FALSE
+Ether,evasion,buff,variable,avoids 15% of single-target attacks,n/a,FALSE,FALSE,FALSE
+Ether,evasion+,buff,variable,avoids 25% of single-target attacks,n/a,FALSE,FALSE,FALSE
+Ether,evasion++,buff,variable,avoids 35% of single-target attacks,n/a,FALSE,FALSE,FALSE
+Ether,ethereal,buff,variable,cannot be hit by basic attacks,n/a,FALSE,FALSE,FALSE
+Ether,ethereal+,buff,variable,cannot be hit by any attack or ability,n/a,FALSE,FALSE,FALSE
+Forge,stagger,debuff,0.05 second,target is interrupted breifly from moving; target continues its movement immediately at end of stagger duration,n/a,TRUE,TRUE,TRUE
+Forge,stagger+,debuff,0.09 second,target is interrupted breifly from moving or taking actions; continues its movement and/or action immediately at end of stagger duration,n/a,TRUE,TRUE,FALSE
+Gamma,radiate,buff,5 seconds,"your next ability has increased range (near range to range 1 to range 2, r2 to r3, etc)",n/a,FALSE,FALSE,FALSE
+Gamma,radiate+,buff,5 seconds,"all abilities or effects throughout duration have increased range and radius (range 1 or radius 1 to range 2, near radius to radius 1, radius 2 to radius 3, etc)",n/a,FALSE,FALSE,FALSE
+Misc,MaxHP_Loss,debuff,variable,max (and current) hp reduced by x amount; current hp does not recover when the duration ends,5,FALSE,FALSE,FALSE
+Misc,MaxHP_Loss+,debuff,variable,max (and current) hp reduced by y amount; current hp does not recover when the duration ends,5,FALSE,FALSE,FALSE
+Misc,Override,buff,endless,your non-basic attacks override ethereal and evasion,n/a,FALSE,FALSE,FALSE
+Misc,Override+,buff,endless,"you always override ethereal, ethereal+, evasion, and evasion+",n/a,FALSE,FALSE,FALSE
+Misc,MaxHP_Gain,buff,variable,"max (and current) hp increased by y amount; current hp does not lower down when the affect ends, unless current hp would be higher than the recovered max in which case it is set to max",n/a,FALSE,FALSE,FALSE
+Misc,MaxHP_Gain+,buff,variable,"max (and current) hp increased by y amount; current hp does not lower down when the affect ends, unless current hp would be higher than the recovered max in which case it is set to max",n/a,FALSE,FALSE,FALSE
+Misc,Damage Immune,buff,variable,cannot take damage or debuffs,n/a,FALSE,FALSE,FALSE
+Misc,Untargetable,buff,variable,"cannot be targeted with abilities (might cause glitch possibilities so handle it as: if a target baddie/player ability would be launched, it instead goes in a straight line instead of homing; if a ship would move to a target, it instead goes in a straight line)",n/a,FALSE,FALSE,FALSE
+Misc,Stasis,buff,variable,"you cannot move other than forced movement; can't rotate, attack, use abilities; passives are stopped/paused; you cannot return to ready position; all player controls of the ship no longer do anything; debuff and buff durations are paused for the duration of stasis",n/a,FALSE,FALSE,FALSE
+Misc,Paralyze,debuff,variable,"cannot move, attack, or use abilities",n/a,TRUE,TRUE,FALSE
+Misc,Invisible,buff,variable,cannot be seen on the screen other than a light hidden effect; does not get impact from projectiles or have collision; aoe damage or other aoe effects immediately remove invisible,n/a,FALSE,FALSE,FALSE
+Plasma,burn,debuff,5 seconds,takes n damage as plasma each tick (.2 seconds per tick),n/a,TRUE,TRUE,TRUE
+Plasma,burn+,debuff,5 seconds,takes y damage as plasma each tick (.2 seconds per tick),n/a,FALSE,FALSE,FALSE
+Void,gravity,debuff,variable,"moves toward the [gravity center] at a constant rate of x, cannot perform any other movement",n/a,TRUE,TRUE,TRUE
+Void,gravity+,debuff,variable,cannot take actions either,n/a,TRUE,TRUE,FALSE
+Volt,shock,debuff,5 seconds,"when target is hit, an electric shock goes from initial baddie to the nearest baddie within radius_1 for n volt damage; initial target takes the extra volt damage if no other baddie is within radius_1",n/a,TRUE,TRUE,TRUE
+Volt,shock+,debuff,5 seconds,"when target is hit, two electric shocks goes from initial baddie to the nearest two baddies within radius_1 for y shock damage; initial target takes the electric shock if no other baddie is within radius_1",n/a,FALSE,FALSE,FALSE
+Misc,Shield,buff,until removed/endless,shield has n charges. it will block all damage from a single hit per charge. while shielded.,n/a,FALSE,FALSE,FALSE

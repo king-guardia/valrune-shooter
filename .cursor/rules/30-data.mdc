@@ -1,0 +1,34 @@
+---
+globs: ["data/**/*.json", "data/**/*.csv"]
+---
+
+# Data authoring
+
+`data/source/` is the original spreadsheet brain dump. It is **input, not schema** —
+never treat its column layout as the data model, and never edit it to fix a schema
+problem. Fix the schema.
+
+Everything else under `data/` is generated or hand-maintained against the schemas in
+`data/schema/`, and must validate.
+
+## Rules
+
+- Conform exactly to the schema. Unknown ids, missing references, and out-of-range
+  values are errors, not warnings.
+- **Geometry uses band ids**, never raw numbers: `r1`, `dis2`, `w1`, `push_impulse_1`.
+  Band values live in one place (`docs/15-CONSTANTS.md` / `data/constants.json`).
+- **Numeric ability parameters may be `null`.** Structure is authored first; numbers
+  come from the Balance Lab and the calibrator. A `null` is a to-do, not a defect.
+- Coordinates are playfield units (0–1000 on x) or percentages. Never pixels.
+- Statuses carry `polarity` and `tags`. Immunity is derived from tags — do not
+  hand-enumerate boss/miniboss/elite booleans per status.
+- Every effect must reference a primitive that exists in `primitives.json`.
+- No node may reference a credit-granting primitive.
+- It is **ETHER**, never AETHER.
+
+## Coverage
+
+Sparse coverage is intended. A combination with no ability is a valid state, not a gap
+to fill with a placeholder. Targets: **50% of dual slots, 30% of triple slots**, and
+every base element in 1–2 triples. Never invent an ability to hit a number — report the
+gap and let it be authored deliberately.

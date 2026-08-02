@@ -1,0 +1,10 @@
+Element,Attunement Affect,Attunement Crit
+Caustic,"your shots are slower, target's recieves [corrosion], increasing damage it takes by n% per stack, up to y stacks",target reaches gets to max stacks
+Chrono,"the target receives slow; if you have 3 chrono element points, they take slow+",baddies in a near radius_1 of the target receive the slow or slow+
+Cryo,"instead of long range projectile, your projectile is a wave blast in front of you (extends distance_1 forward and wide width out, in an arc). hits deal n bonus cryo damage.",you receive rime for 2 seconds
+Ether,the projectiles go through (still hit) the first baddie and can also hit a second baddie behind it; basic hits ignores shield,"can hit any number of targets behind the first, ignoring shields"
+Forge,"target gets stagger; if you have forge 3 element points, they take stagger+",r [radius] of targets are pushed and also take n damage 
+Gamma,"your attacks deal extra gamma damage if the target is beyond distance_2 from you; if you have 3 gamma element points, they take extra damage if they are beyond distance_1 from you",special: this extra gamma damage also crits
+Plasma,"target gets burn; if you have plasma 3 element points, they take burn+",baddies in radius_1 of the initial baddie receive the burn or burn+
+Void,each hit makes all baddies in near radius to the target get gravity to the target,all baddies within radius_closr of the target get gravity to the target for .1 second
+Volt,"target gets shock; if you have volt 3 element points, they take shock+",the jumping chain lightning also applies the shock or shock+

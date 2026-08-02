@@ -1,0 +1,19 @@
+---
+globs: ["**/*.gd"]
+---
+
+# GDScript style
+
+Not active until M0. `game/` is empty during planning.
+
+- `snake_case` for functions and variables, `PascalCase` for classes,
+  `SCREAMING_CASE` for constants.
+- Static typing on every function signature and member variable.
+- `class_name` on every reusable class.
+- One class per file. Files under 300 lines — split if longer.
+- **Composition over inheritance, maximum two levels.** `Baddie` is one class with a
+  role-tag component, not five subclasses.
+- No node paths as strings beyond `@onready`. Use exported `NodePath`s or unique names.
+- Document any function whose behaviour is not obvious from its name, in one line.
+- Variable naming follows `docs/15-CONSTANTS.md`: `r` radius, `dis` distance,
+  `dur` duration, `c` cooldown, `s` stacks, `dot` damage-over-time, `dam` damage.

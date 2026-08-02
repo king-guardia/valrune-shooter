@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+
+# VALRUNE
+
+An Android 2D top-down space shooter. Godot 4.7.1 / GDScript. Solo developer working
+through an AI assistant, so the repository is the memory and the documents are the contract.
+
+## Reading order and authority
+
+**`docs/decisions/0000-decision-log.md` is authoritative.** The numbered documents in
+`docs/` are **v0** — written before the ability and status spreadsheets were reconciled.
+Several of their decisions have been reversed. Where a v0 document conflicts with the
+decision log, **the decision log wins.** Every v0 file carries a banner saying so.
+
+| Path | Contains |
+|---|---|
+| `docs/decisions/` | Decision log + ADRs. **Authoritative.** |
+| `docs/00`–`13` | v0 design documents. Revised in Phase 7. |
+| `docs/14-CANON.md` | Glossary. Every term and its code identifier. *(Phase 1a)* |
+| `docs/15-CONSTANTS.md` | Geometry bands, playfield units, naming. *(Phase 1b)* |
+| `docs/16-STATUS-EFFECTS.md` | Status catalog, tags, immunity/override. *(Phase 1d)* |
+| `docs/17-BALANCE-METHOD.md` | Power metrics and profiles. *(Phase 4)* |
+| `data/source/` | The original spreadsheet brain dump. Input, not schema. |
+| `data/` | Generated, validated JSON. Source of truth for balance. |
+
+## Current phase
+
+The project is in **planning**, not implementation. `game/` is empty and stays empty
+until the M0 control prototype. Do not scaffold Godot code, write GDScript, or create
+scenes unless the task explicitly says M0 has started.
+
+## Before implementing anything
+
+Read the relevant document first. If a request conflicts with `docs/decisions/`, say so
+and ask — do not silently deviate. If a decision is genuinely new, write it into the
+decision log as part of the work.
+
+## Vocabulary
+
+Terms are defined in `docs/14-CANON.md` and are not interchangeable. In particular
+**gun** (a mount), **gun-shot** (one trigger event across all mounts), and **projectile**
+(one bullet from one mount) mean different things, as do **basic attack** and **ability**
+on the baddie side. Use the defined term.
+
+Elements are PLASMA, CRYO, FORGE, VOLT, CAUSTIC (base) and CHRONO, GAMMA, VOID, ETHER
+(DLC). It is **ETHER**, never AETHER.

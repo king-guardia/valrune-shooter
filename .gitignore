@@ -24,7 +24,24 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Game dev artifacts
+# Godot
+game/.godot/
+game/.import/
+game/export.cfg
+game/export_presets.cfg
+game/android/build/
+*.translation
+
+# Android signing — losing the keystore means never updating the app.
+# Keep it in a password manager AND one offline backup.
+*.keystore
+*.jks
+
+# Build artifacts
 *.zip
 *.apk
 *.aab
+
+# Generated reports — regenerate with tools/, never commit
+dashboard/generated/
+tools/**/out/

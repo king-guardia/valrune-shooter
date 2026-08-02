@@ -1,0 +1,18 @@
+# Normalize to LF in the repo. Without this, CSVs round-tripping through the Sheets
+# sync produce whole-file diffs on every pull.
+* text=auto eol=lf
+
+*.gd    text eol=lf
+*.tscn  text eol=lf
+*.tres  text eol=lf
+*.csv   text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+
+*.png   binary
+*.jpg   binary
+*.webp  binary
+*.ogg   binary
+*.wav   binary
+*.ttf   binary
+*.otf   binary

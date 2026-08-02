@@ -1,0 +1,24 @@
+object ability(name),,
+var,name,
+,id,numerical key for the ability concatenated by some number conversion
+,duration,
+,cooldown,
+,type,passive/active
+,start-rules,
+,end-rules,
+,target-range-type,"self, enemy, none, radius-near, radius-1, radius-2, radius-3, distance-near, distance-1, distance-2, distance-3, distance-4"
+,arrival-range-type,"self, enemy none, radius-near, radius-1, radius-2, radius-3, distance-near, distance-1, distance-2, distance-3, distance-4"
+,target-range-speed,
+,arrival-range-speed,
+,target-range-shape,"none, circle, oval, 3-point, 4-point, 5-point, 6-point, 7-point, line"
+,arrival-range-shape,"none, circle, oval, 3-point, 4-point, 5-point, 6-point, 7-point, line"
+,target-range-fill,true/false
+,arrival-range-fill,true/false
+,,
+,,
+,,
+,,
+object interactable,,
+interactable objects: ,"valrune, baddie, elite, miniboss, boss",
+they all have:,hp,
+,trigger rate,
