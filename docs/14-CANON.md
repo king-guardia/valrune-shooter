@@ -1,8 +1,8 @@
 # 14 — Canon
 
-**Status: draft, revision 2 — awaiting Bryan's review.** This is the vocabulary contract.
-Once you sign off, these terms are used exactly as written, in documents, in data, and in
-code.
+**Status: accepted.** This is the vocabulary contract. These terms are used exactly as
+written — in documents, in data, and in code. Changing one now requires an entry in
+[`docs/decisions/`](decisions/).
 
 Three rules for reading this:
 
@@ -59,22 +59,23 @@ looks like or what it is called. Eight of them carry the whole roster, because
 `archetype x role tags x affinity` generates the variety.
 
 Your objection to the v0 names is correct, and the fix is structural: **the archetype id
-describes the behavior, and the fiction name is display text.** They were fused before,
-which is why renaming the faction meant renaming the code.
+describes the behavior, and the display name is separate.** They were fused before, which
+is why renaming the faction would have meant renaming code.
 
-| Archetype id | Behavior | v0 fiction name |
-|---|---|---|
-| `drifter` | Straight-line drift. The chaff. | Mote |
-| `weaver` | Sine-wave approach, faster, harder to lead. | Lash |
-| `charger` | Locks on, telegraphs, then rams at 3x speed. | Spike |
-| `splitter` | Tanky; breaks into two smaller baddies on death. | Husk |
-| `turret` | Stationary shooter. | Anchor |
-| `shielder` | Slow; grants nearby baddies immunity. | Warden |
-| `miner` | Drops field objects on a pattern. | Seeder |
-| `spawner` | Carrier; periodically emits minions. | Choir |
+| Archetype id | Behavior |
+|---|---|
+| `drifter` | Straight-line drift. The chaff. |
+| `weaver` | Sine-wave approach, faster, harder to lead. |
+| `charger` | Locks on, telegraphs, then rams at 3x speed. |
+| `splitter` | Tanky; breaks into two smaller baddies on death. |
+| `turret` | Stationary shooter. |
+| `shielder` | Slow; grants nearby baddies immunity. |
+| `miner` | Drops field objects on a pattern. |
+| `spawner` | Carrier; periodically emits minions. |
 
-The right column is throwaway — v0 fiction, replaced when the faction is named. The left
-column never changes. Data references `drifter`; the player sees whatever `locale/` says.
+The v0 fiction names (Mote, Lash, Spike, Husk, Anchor, Warden, Seeder, Choir) are
+**discarded**. The id doubles as the display name until fiction names are written, and the
+separation means writing them later costs a `locale/` entry and nothing else.
 
 ### Affinity
 
@@ -114,6 +115,33 @@ everything else.
 **`fire` is a verb only.** The gun fires. The element is PLASMA, the status is burn, the
 field object is a flame trail.
 
+### Homing
+
+Replaces v0's `spread` rank line. **Each rank grants N degrees of correction**: a
+projectile may curve up to that many degrees off its launch heading to intersect a baddie.
+At 15 degrees you no longer have to be dead-on, which matters a great deal given that you
+are rotating and strafing at the same time.
+
+Better than spread, and for a reason worth stating: spread made your shots *less*
+accurate as it grew, so it was a stat you bought to change your playstyle rather than to
+improve. Homing makes the control scheme forgiving, and per `03` §3.2.3 players notice
+control improvements disproportionately.
+
+Three things this touches:
+
+- **`homing` the stat is not `delivery: homing` the ability mode.** The stat is a soft
+  one-shot correction toward whatever is in the cone at launch. The ability mode is full
+  tracking that retargets mid-flight (D-046). **Basic-attack projectiles never retarget**
+  — there are thousands of them, and giving each a tracking loop is a real frame cost for
+  a benefit nobody would perceive.
+- **Spread also drove the visuals** — helix amplitude at 2 guns, fan angle at 3 (v0 `04`
+  §4.4.4). Those now need fixed values, which is fine and arguably better: the helix reads
+  as a signature rather than a setting.
+- **It overlaps the Assist Aim accessibility toggle** (`03` §3.2.6). Selling a purchasable
+  version of an accessibility feature needs care [OPEN]. Cleanest split: `homing` bends
+  the *projectile*, Assist Aim bends the *ship's heading*. Different mechanisms, no
+  awkwardness about paying for accessibility.
+
 ### Basic attack vs ability
 
 The rules-facing distinction. Evasion, ethereal, and poison all scope by it.
@@ -148,7 +176,7 @@ that became AoE — is not evadable. Contact damage is never evadable.
 | **Field object** | A persistent thing occupying space: mine, flame trail, fissure, zone, portal, wire net. | `FieldObject` |
 | **Trail** | A field object emitted continuously from the Valrune's stern as it moves. | `TrailEmitter` |
 | **Lifetime** | How long a spawned object exists. | `lifetime` |
-| **Faction** | `PLAYER` or `BADDIE`. Determines what can hurt what. | `faction` |
+| **Faction** | `MERCENARY` or `HORROR`. Determines what can hurt what. | `faction` |
 
 **On your lifetime/cooldown question — yes, exactly that.** The parameter always exists;
 its value may be unbounded. `lifetime: null` means "until the contract ends",
@@ -216,7 +244,7 @@ do not. That is a consumer of the data, not a difference in the data.
 
 | Group | Lines |
 |---|---|
-| **Offense** | `damage`, `attack_speed`, `guns`, `crit_chance`, `crit_damage`, `velocity`, `spread` |
+| **Offense** | `damage`, `attack_speed`, `guns`, `crit_chance`, `crit_damage`, `velocity`, `homing` |
 | **Defense** | `hull`, `shield`, `shield_recharge`, `bulwark_flat` |
 | **Mobility** | `thrusters`, `gyros` |
 
@@ -582,14 +610,16 @@ A baddie is a **set of concurrent actions**, not one state. Phase 3 diagrams it.
 
 Two left. Everything else is settled.
 
-### 1. Naming — the faction and the screens
+### 1. Screen names
 
-Eldritch-plus-technology gives a clean structural axis that maps to your description, and
-I would put it in the data: `chassis: organic | augmented`. Organic ones are
-collision-focused and may die on impact or ignore it entirely; augmented ones shoot.
-That is one field driving both fiction and behavior.
+The factions are settled: **the Mercenaries** and **the Horror**, `MERCENARY` and
+`HORROR` in code.
 
-Names I would put forward, all replaceable:
+Eldritch-plus-technology also gives a clean structural axis worth putting in the data:
+`chassis: organic | augmented`. Organic ones are collision-focused and may die on impact
+or ignore it entirely; augmented ones shoot. One field driving both fiction and behavior.
+
+Screen names I would put forward, all replaceable:
 
 | Screen | Proposal |
 |---|---|
@@ -623,7 +653,3 @@ to exactly one boss, ideally the final one, and treat it as content rather than 
 
 Reading your defense affinity as the counter to the player's current attunement is cheap
 and a nice touch.
-
-### Still unnamed
-
-The faction. Not "the Hollow."

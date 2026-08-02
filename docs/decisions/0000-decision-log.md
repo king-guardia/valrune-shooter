@@ -272,10 +272,14 @@ Replaces the proposed inert "hazard". Debris drifts on a heading, meteors cross 
 derelict gun spins and fires. It takes archetypes and role tags like any baddie; class 0
 governs only immunity and scaling. Ladder: **Debris, Minion, Elite, Miniboss, Boss.**
 
-### D-038 [N] Archetype id is descriptive; fiction name is display text
-The two were fused, so renaming the faction meant renaming code. Now:
+### D-038 [N] Archetype id is descriptive; display name is separate
+The two were fused, so renaming the faction would have meant renaming code. Now:
 `drifter, weaver, charger, splitter, turret, shielder, miner, spawner`. Data references the
 id forever; `locale/` carries whatever the player sees.
+
+**The v0 fiction names are discarded** — Mote, Lash, Spike, Husk, Anchor, Warden, Seeder,
+Choir are gone. The id doubles as the display name for now, which is more descriptive
+anyway. Writing real fiction names later costs a `locale/` entry and nothing else.
 
 ### D-039 [N] Affinity splits into attack and defense
 `attack_affinity` (types dealt) and `defense_affinity` (types taken). v0's single field
@@ -297,7 +301,8 @@ sentinels like `-1`. The parameter always exists; its value may be unbounded.
 
 ### D-043 [N] Drones are non-collidable with everything
 Not cover for the player, not an obstacle for baddies. Same-faction projectiles pass
-through as if absent. `faction: PLAYER | BADDIE`. Types so far: `hologram`, `undead`.
+through as if absent. `faction: MERCENARY | HORROR` (D-061). Types so far: `hologram`,
+`undead`.
 
 ### D-044 [R] Everything purchasable is a rank line
 **Rank tree / rank line / rank**, replacing stat tree / upgrade line / rank.
@@ -458,6 +463,41 @@ fleeing a boss no longer works because it always comes back around.
 
 Arena dimensions in screens are a Phase 1b number.
 
+### D-060 [R] `homing` replaces the `spread` rank line
+Each rank grants **N degrees of correction** — a projectile may curve that far off its
+launch heading to intersect a baddie. At 15 degrees you no longer have to be dead-on,
+which matters given that you rotate and strafe simultaneously.
+
+**Why it is the better line:** spread made your shots less accurate as you bought it, so
+it changed playstyle rather than improving anything. Homing makes the control scheme
+forgiving, and `03` §3.2.3 notes players value control improvements disproportionately.
+
+Three consequences:
+
+- **The stat is not `delivery: homing`** (D-046). The stat is a one-shot correction toward
+  whatever is in the cone at launch. The ability mode retargets mid-flight.
+  **Basic-attack projectiles never retarget** — thousands of tracking loops is a real
+  frame cost for an imperceptible benefit.
+- **Spread also drove visuals** — helix amplitude at 2 guns, fan angle at 3 (v0 `04`
+  §4.4.4). Those become fixed values, arguably better: the helix becomes a signature
+  rather than a setting.
+- **Overlaps Assist Aim** (`03` §3.2.6). See O-14.
+
+Rank count and degrees-per-rank are Phase 1b numbers.
+
+### D-061 [N] The factions are the Mercenaries and the Horror
+`faction: MERCENARY | HORROR`, replacing the placeholder `PLAYER | BADDIE`. Grounding the
+enum in fiction rather than in role means a third faction later costs nothing.
+
+**"The Hollow" is deleted.** The Horror is eldritch-plus-technology: organic ones are
+collision-focused and may die on impact or ignore it entirely; augmented ones shoot, spit,
+or beam. The proposed `chassis: organic | augmented` field drives fiction and behavior
+together.
+
+Debris sits in `HORROR` [OPEN] — fictionally odd for an asteroid, but faction only decides
+what can damage what, and a third `NEUTRAL` faction would earn its keep only if debris
+needs to hurt both sides.
+
 ---
 
 ## Open — not yet decided
@@ -470,7 +510,8 @@ Arena dimensions in screens are a Phase 1b number.
 | O-04 | Element point economy — 10 points, max level 3, 5 base elements needs 15 to max. Sparse coverage means some spreads unlock very little; the Hangar must show that before you spend | Phase 7 |
 | O-05 | Cross-axis parity — how a pure-defensive ability compares to a pure-offensive one. Starting heuristic: abilities declare a role, parity checked within role, cross-role weights set once | Phase 4, deferred until real data |
 | O-06 | Threat profile calibration — composition and hit size are guesses until M0 | M0 |
-| O-10 | **Faction identity.** Not "the Hollow". Eldritch plus technology. Proposed data axis: `chassis: organic \| augmented` — organic is collision-focused and may die on impact or ignore it, augmented shoots. One field driving fiction and behavior together | Phase 7 |
 | O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
 | O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |
+| O-14 | **`homing` vs the Assist Aim accessibility toggle.** Selling a purchasable version of an accessibility feature needs care. Cleanest split: `homing` bends the *projectile*, Assist Aim bends the *ship's heading* — different mechanisms, no awkwardness about paying for accessibility | Phase 1b |
+| O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `HORROR` and the fiction oddity costs nothing | Phase 2 |

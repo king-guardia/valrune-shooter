@@ -19,19 +19,29 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 
 ## Phase 1 — Glossary, constants, ADRs
 
-**1a is a hard gate. Nothing in Phase 2 starts until Bryan has corrected the glossary.**
+### 1a — Canon ✅ **ACCEPTED**
 
-- [x] `docs/14-CANON.md` drafted — 11 sections, every term with a code identifier
-  - [x] People and ships · baddies · spawned objects · weapons · elements
-  - [x] Progression · ability anatomy · damage · statuses · geometry · structure · behavior
-  - [x] `basic attack` vs `ability` vs `contact damage` — the D-017 blocker
-  - [ ] **Bryan reviews and corrects — 9 open questions at the bottom of the file**
-    - Only Q3 (is GAMMA's "beam" a real continuous weapon?) has downstream cost;
-      it decides whether a hitscan damage path is needed at all. The rest are naming.
-- [ ] `docs/15-CONSTANTS.md` — band values, playfield units, variable naming
-  - [ ] Resolve O-01: the percentage allowlist
-- [ ] `docs/16-STATUS-EFFECTS.md` — status catalog, tags, ImmunitySet/OverrideSet
-  - [ ] Resolve O-02: does the five-tag taxonomy carve the space correctly?
+- [x] `docs/14-CANON.md` — 11 sections, every term with a code identifier
+- [x] `basic attack` vs `ability` vs `contact damage` — the D-017 blocker, resolved
+      on **rate vs cooldown**
+- [x] Bryan's review pass — 27 decisions recorded (D-035 to D-061)
+
+The gate is open. Phase 2 can proceed on vocabulary.
+
+### 1b — Constants ← **NEXT**
+
+- [ ] `docs/15-CONSTANTS.md`
+  - [ ] Band ladders. Anchor on **`dis3` = ready line to top border** (D-054) — the one
+        band with a physical meaning; derive the rest relative to it rather than
+        guessing each independently
+  - [ ] Widths `w0`–`w3`, Valrune-relative
+  - [ ] `push_N` / `pull_N` as `(distance, time)` pairs
+  - [ ] Expanse arena dimensions in screens (D-059)
+  - [ ] `homing` rank count and degrees per rank (D-060)
+  - [ ] `bulwark_flat` rank count now that it carries mitigation alone (D-058)
+  - [ ] Resolve O-14 (homing vs Assist Aim)
+- [ ] `docs/16-STATUS-EFFECTS.md` — catalog, tags, families, ImmunitySet/OverrideSet
+  - [ ] Resolve O-02 (tag taxonomy) and O-13 (who owns `invisible`)
 - [ ] Expand load-bearing decisions into full ADRs (D-007, D-009, D-015, D-019, D-029)
 
 ## Phase 2 — Data model and gap report
