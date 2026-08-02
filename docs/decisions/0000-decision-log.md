@@ -618,29 +618,30 @@ outruns nothing. If it narrows, shooting while advancing feels wrong — you cha
 bullets, forward shots crawl and backward shots race. Preserve the ratio if either number
 moves.
 
-### D-070 [R] Crit chance ceiling drops to ~4%; the floor is unresolved
+### D-070 [R] `crit_chance` runs 1.0% → 4.0%, 12 ranks × +0.25%
 At 10% and 15 shots/sec you get 1.5 crits per second, which is texture rather than a
-critical hit. The ceiling comes down to **~4%** — 15 × 4% is one crit every 1.7s.
+critical hit. The ceiling drops to **4%** — one crit every 1.7s at max fire rate.
 
-**The structural problem: crit frequency is `fire_rate × crit_chance`, and both scale up
-together**, so frequency scales multiplicatively. v0 swung 24× across the campaign. A
-0.05% floor would swing 400× and leave a new player **11 minutes between crits**, making
-every attunement crit effect invisible content for the early game — the exact failure the
-free baseline exists to prevent.
+**Crit frequency is `fire_rate × crit_chance`, and both scale up together**, so frequency
+scales multiplicatively and the floor cannot be set independently of the ceiling. v0 swung
+24× across the campaign. A 0.05% floor would swing 400× and leave a new player **11
+minutes between crits**, making every attunement crit effect invisible content for the
+early game — the exact failure the free baseline exists to prevent.
 
-Two candidate fixes, unresolved as **O-22**:
+Locked at **1.0% base, 12 ranks × +0.25%, max 4.0%**: one crit per 33s at the start, per
+4.4s mid, per 1.7s at max. Rare enough early to feel like an event, frequent enough that
+crit-triggered nodes are live from the first contract.
 
-- **A — raise the floor:** 1.0% base, 12 ranks × +0.25%, max 4.0%. Start is one crit per
-  33s, max one per 1.7s. Simple, familiar, still a 20× swing.
-- **B — denominate the line in crits per second**, deriving per-shot chance as
-  `target_rate / fire_rate`. Start 0.20/s, max 0.60/s. Attack speed stops secretly buying
-  crit frequency, and attunement crit effects fire on a cadence that can actually be
-  balanced. Unconventional, and the Hangar shows "0.35 crits/sec" instead of a percentage.
+A crits-per-second denomination was considered — deriving per-shot chance as
+`target_rate / fire_rate`, which would have flattened the curve entirely — and rejected in
+favour of keeping the line legible as a percentage. The 20× campaign swing is accepted.
 
-Leaning **B**, because the attunement crit effects are authored content rather than a
-damage rounding error.
+**Consequence for the Balance Calibrator:** on-crit attunement effects fire 0.6×/sec at the
+top end and must be valued against that, not against the rare-event framing implied by the
+early game.
 
-Either way the PRD table is regenerated; v0's covers 5–30% and is useless.
+PRD table regenerated for 1–4%; v0's covers 5–30% and is useless. At these chances PRD
+needs a long tail — the shot counter runs into the hundreds between crits.
 
 ### D-072 [N] Projectiles inherit 25% of ship velocity
 ```
@@ -682,9 +683,8 @@ cross at base speed.
 | O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
 | O-20 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it sets both the Expanse size and the projectile ratio. The most load-bearing feel number in the game | M0 |
 | O-21 | **`CLUSTERING = 2.0`.** Not answerable at a desk — becomes a Balance Lab slider and gets measured in M0. Every AoE valuation rides on it | M0 |
-| O-22 | **`crit_chance` floor — percentage, or crits-per-second?** See D-070. The only unresolved item here that is a desk decision rather than an M0 measurement | Phase 1b |
-| O-23 | **Is the 18° homing ceiling too steep?** A 36° cone is a third of the forward hemisphere. Left generous so M0 can dial back from "too much" rather than guess upward | M0 |
-| O-24 | **Homing plus velocity inheritance.** A slower retreating projectile has longer to curve, so backward shots may end up more accurate. Fix if real: scale correction by distance travelled, not elapsed time | M0 |
+| O-22 | **Is the 18° homing ceiling too steep?** A 36° cone is a third of the forward hemisphere. Left generous so M0 can dial back from "too much" rather than guess upward | M0 |
+| O-23 | **Homing plus velocity inheritance.** A slower retreating projectile has longer to curve, so backward shots may end up more accurate. Fix if real: scale correction by distance travelled, not elapsed time | M0 |
 
 **Resolved since last revision:** O-01 (D-058), O-07 (D-057), O-08 (D-058), O-09 (D-059),
 O-10 (D-061), O-14 (dissolved by D-063 — Assist Aim cut), O-16 (D-068), O-19 (D-065).

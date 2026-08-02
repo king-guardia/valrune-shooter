@@ -28,17 +28,19 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 
 The gate is open. Phase 2 can proceed on vocabulary.
 
-### 1b — Constants (drafted)
+### 1b — Constants ✅ **ACCEPTED**
 
 - [x] `docs/15-CONSTANTS.md` — playfield, entity sizes, all band ladders, push/pull,
       speeds, time, the Expanse, and every rank line needing numbers
 - [x] Ladders respaced against a **count of real usage** in the spreadsheets:
       `r1` appears 51 times, `distance_3` is authored as "max distance"
 - [x] Resolved O-01, O-14 (Assist Aim cut), O-16 (letterbox), O-19 (ladder respaced)
-- [x] 13 decisions recorded (D-062 to D-071)
-- [ ] **Bryan reviews — 4 open questions, all of them M0 measurements**
-      (`CLUSTERING`, Expanse size, `HOMING_BASE`, `VALRUNE_SPEED_BASE`) rather than
-      desk decisions
+- [x] Bryan's review pass — `crit_chance` 1.0% → 4.0%, projectiles inherit 25% of ship
+      velocity, homing ceiling flagged for M0 (D-062 to D-072)
+
+Everything still open here is an **M0 measurement, not a desk decision** — `CLUSTERING`,
+Expanse size, `HOMING_BASE`, `VALRUNE_SPEED_BASE`, the homing ceiling, and the
+homing/inheritance interaction. Numbers are good enough to build the data model on.
 
 ### 1c/1d — Statuses and ADRs ← **NEXT**
 

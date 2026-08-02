@@ -325,7 +325,7 @@ Three consequences worth holding onto:
 
 | Line | Base | Ranks | Max | Note |
 |---|---|---|---|---|
-| `crit_chance` | — | — | ~4% | **Unresolved — see below** |
+| `crit_chance` | 1.0% | 12 × +0.25% | 4.0% | See below |
 | `crit_damage` | 1.25× | 25 × +0.05 | 2.50× | Unchanged |
 | `attack_speed` | 3.0/s | 24 × +0.5 | 15.0/s | Per D-012 |
 | `homing` | 2° | 8 × +2° | 18° | Ceiling likely too steep, see below |
@@ -334,73 +334,36 @@ Three consequences worth holding onto:
 | `gyros` | 420 °/s | 20 × +15 | 720 °/s | |
 | `velocity` | 2400 u/s | 5 × +160 | 3200 u/s | |
 
-### `crit_chance` — the real problem is that it multiplies with fire rate [OPEN]
+### `crit_chance` — 1.0% base, 12 ranks × +0.25%, max 4.0% (D-070)
 
-Your instinct is right: at 10% and 15 shots/sec you get 1.5 crits per second, which is not
-a critical hit, it is a texture. But the numbers you proposed break the other end, and the
-underlying issue is structural.
+At 10% and 15 shots/sec you get 1.5 crits per second, which is not a critical hit, it is a
+texture. The ceiling comes down hard. But **crit frequency is `fire_rate × crit_chance`,
+and both scale up together**, so frequency scales multiplicatively and the floor cannot be
+set independently of the ceiling:
 
-**Crit frequency is `fire_rate × crit_chance`, and both scale up together.** So crit
-frequency scales multiplicatively across the campaign, which is why every version of this
-has felt wrong:
+| | Fire rate | Crit chance | Crits/sec | One crit every |
+|---|---|---|---|---|
+| v0 start | 2.0 | 5% | 0.10 | 10s |
+| v0 max | 8.0 | 30% | 2.40 | 0.4s |
+| **Locked** start | 3.0 | 1.0% | 0.03 | 33s |
+| **Locked** mid | 9.0 | 2.5% | 0.22 | 4.4s |
+| **Locked** max | 15.0 | 4.0% | 0.60 | 1.7s |
 
-| | Fire rate | Crit chance | Crits/sec | One crit every | |
-|---|---|---|---|---|---|
-| **v0** start | 2.0 | 5% | 0.10 | 10s | |
-| **v0** max | 8.0 | 30% | 2.40 | 0.4s | 24× swing |
-| **Your proposal** start | 3.0 | 0.05% | 0.0015 | **11 minutes** | dead |
-| **Your proposal** max | 15.0 | 4% | 0.60 | 1.7s | 400× swing |
+A 0.05% floor was considered and rejected: it puts **11 minutes between crits** for a new
+player, which would make every attunement crit effect — one per element, authored content —
+invisible for the entire early game. The 1.0% floor keeps a crit rare enough to feel like
+an event at 33 seconds apart while still letting those nodes fire.
 
-At 0.05% a new player goes **several entire contracts without a single crit.** Every
-attunement crit effect — a core mechanic, one per element in `attunement_table.csv` — would
-be invisible content for the whole early game. That is the exact failure v0's free 5%
-existed to prevent.
+The campaign still swings 20× from start to finish. That is accepted as the cost of
+keeping the line legible as a percentage.
 
-Your 4% ceiling is close to right: 15 × 4% is a crit every 1.7 seconds. It is the floor
-that needs raising, and there are two ways to do it.
+**This constrains AoE-on-crit and chain-on-crit attunement effects.** At the top end they
+fire every 1.7 seconds, so the Balance Calibrator must value them against 0.6 procs/sec,
+not against the rare-event framing the early game implies.
 
-**Option A — raise the floor, keep percentages.**
-
-```
-crit_chance = 1.0% base, 12 ranks × +0.25%, max 4.0%
-```
-
-| | Crits/sec | One crit every |
-|---|---|---|
-| Start (3.0/s, 1%) | 0.03 | 33s |
-| Mid (9.0/s, 2.5%) | 0.22 | 4.4s |
-| Max (15.0/s, 4%) | 0.60 | 1.7s |
-
-Simple, and a crit stays a genuine event early. Still a 20× swing.
-
-**Option B — buy crits per second, not crit chance.**
-
-Since D-049 puts everything on PRD anyway, the line can be denominated in the thing you
-actually care about, and the per-shot chance derived:
-
-```
-crit_chance_per_shot = target_crits_per_sec / fire_rate
-```
-
-| | Target | One crit every |
-|---|---|---|
-| Start | 0.20/s | 5s |
-| Max | 0.60/s | 1.7s |
-
-**Crit frequency becomes designable and stops exploding.** Buying attack speed no longer
-secretly buys crit frequency, so the two lines stop compounding. Attunement crit effects
-fire on a predictable cadence you can actually balance against, which matters because
-those effects are authored content, not a damage rounding error.
-
-The cost: it is unconventional, the Hangar has to display "0.35 crits/sec" instead of a
-percentage, and players who expect attack speed to boost everything may find it
-surprising.
-
-**I lean B**, because the attunement crit effects are real content and Option A still
-leaves them 20× more frequent at the end than the start. But A is the safe, familiar
-choice and there is nothing wrong with it.
-
-Either way the PRD table must be regenerated — v0's covers 5–30% and is now useless.
+The PRD table must be regenerated for the 1–4% range — v0's covers 5–30% and is now
+useless. Note that PRD at these low chances needs a long tail, since the naive constant
+approaches zero and the shot counter runs into the hundreds between crits.
 
 ### `homing` (D-060)
 
@@ -477,5 +440,4 @@ Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 | 2 | **Expanse at 6000²** — 6s to cross at base speed. A torus too large stops reading as a torus | M0 |
 | 3 | **`HOMING_BASE`** — 0° or 2°? And is the 18° ceiling too steep? | M0 |
 | 4 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it drives the Expanse size and the projectile ratio | M0 |
-| 5 | **`crit_chance` — percentage floor, or crits-per-second?** Option A vs Option B above. The only one of these that is a desk decision | Phase 1b |
-| 6 | **Homing plus velocity inheritance** may make retreating shots more accurate, since a slower projectile has longer to curve | M0 |
+| 5 | **Homing plus velocity inheritance** may make retreating shots more accurate, since a slower projectile has longer to curve | M0 |
