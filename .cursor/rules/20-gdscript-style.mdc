@@ -14,6 +14,13 @@ Not active until M0. `game/` is empty during planning.
 - **Composition over inheritance, maximum two levels.** `Baddie` is one class with a
   role-tag component, not five subclasses.
 - No node paths as strings beyond `@onready`. Use exported `NodePath`s or unique names.
-- Document any function whose behaviour is not obvious from its name, in one line.
-- Variable naming follows `docs/15-CONSTANTS.md`: `r` radius, `dis` distance,
-  `dur` duration, `c` cooldown, `s` stacks, `dot` damage-over-time, `dam` damage.
+- Document any function whose behavior is not obvious from its name, in one line.
+- **Full words for variables** — `duration`, `cooldown`, `radius`, `stacks`, `damage`.
+  The short forms in the source spreadsheets (`dur`, `c`, `r`, `s`, `dam`) do not cross
+  into code, where there is no column header to supply context and `c` sits next to
+  `charges`, `cooldown`, and `combination` (D-047).
+- **Band ids stay short** — `r1`, `dis2`, `w1`, `push_1`. These are token values, not
+  variables. `radius = "r2"` reads correctly.
+- Vocabulary is fixed by `docs/14-CANON.md`. A **gun** is a mount, a **gun-shot** is one
+  trigger event across all mounts, a **projectile** is one bullet, a **beam** is a
+  continuous tick-based effect. `fire_rate` counts gun-shots, never projectiles.

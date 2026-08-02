@@ -15,7 +15,7 @@ v0 (`04` §4.8, `08` §8.3, `12`) required triple nodes to be *composed* automat
 
 **Decision:** triples are bespoke. Composition is deleted. A combination with no authored ability simply has no node; the coverage report measures gaps rather than demanding completeness.
 
-**Why:** the composed model was scope control, not design. Composed triples would have been recolours of their duals, which is precisely the failure mode `10` §10.8 warns about.
+**Why:** the composed model was scope control, not design. Composed triples would have been recolors of their duals, which is precisely the failure mode `10` §10.8 warns about.
 
 ### D-002 [R] Two ability slots per combination
 v0 assumed one node per combination (129 total). Each combination has a **passive** and an **active** slot.
@@ -143,7 +143,7 @@ Tracing every Chrono effect in the spreadsheets, that ability was the **only** c
 This deletes the highest-risk system in the design at no cost to anything else. The vacated slot returns to the gap report. When re-authored, `paralyze` applied to all non-boss baddies reproduces the time-stop fantasy from existing parts, including the boss immunity.
 
 ### D-020 [R] Drones replace "extra ship slots"
-Undamageable and untargetable. Behaviour:
+Undamageable and untargetable. Behavior:
 
 1. Fly to within `r1` of the nearest baddie and shoot
 2. Hold that target until it dies, then retarget
@@ -164,7 +164,7 @@ Persistent field/terrain objects (mines, debris, fissures, zones, portals, trail
 ### D-022 [N] Five loadout slots
 **3 passive + 1 active + 1 auto-active.** The active slot is freely toggleable to auto. Auto-active unlocks after **Miniboss 2**.
 
-An auto-fired active uses your **current heading**. Directional abilities (solar beam, comet, spectral lance) lose most of their value on auto; self-centred and auto-targeting ones (mines, neutron stars, taser, lightning storm) lose nothing. The toggle is a real per-ability decision, not a strictly-better button.
+An auto-fired active uses your **current heading**. Directional abilities (solar beam, comet, spectral lance) lose most of their value on auto; self-centered and auto-targeting ones (mines, neutron stars, taser, lightning storm) lose nothing. The toggle is a real per-ability decision, not a strictly-better button.
 
 Requires an `auto_fire_efficiency` parameter per ability.
 
@@ -183,7 +183,7 @@ expected_hits = density × (π·r² / playfield_area) × clustering
 ```
 
 ### D-025 [R] Movement splits into push and pull
-A single `mr` band conflated two different behaviours (`misc_ideas` line 15 describes the tension).
+A single `mr` band conflated two different behaviors (`misc_ideas` line 15 describes the tension).
 
 - **`push_impulse`** — displacement in units over a fixed short window (~0.08s). Does **not** override the target's own movement
 - **`pull_speed`** — sustained units/sec toward a source. The `gravity` status is what makes it override movement
@@ -196,17 +196,17 @@ A single `mr` band conflated two different behaviours (`misc_ideas` line 15 desc
 ## Balance method
 
 ### D-027 [N] Three metrics, no single power score
-**Offence, defence, utility**, kept separate. Parity is checked per metric at **±15%** (v0 said ±25%).
+**Offense, defense, utility**, kept separate. Parity is checked per metric at **±15%** (v0 said ±25%).
 
-### D-028 [N] Offence is a 120-second window
+### D-028 [N] Offense is a 120-second window
 ```
 uses    = ceil(120 / (duration + cooldown))    # 120s cd → 1, 60s → 2, 30s → 4, 10s → 12
-offence = actives:  uses × damage_per_use × auto_fire_efficiency (if auto-slotted)
+offense = actives:  uses × damage_per_use × auto_fire_efficiency (if auto-slotted)
           passives: continuous rate × uptime × 120
 ```
 First use at t=0. `ceil` counts uses *starting* within the window, avoiding the artifact where a 120s ability appears to fire at both t=0 and t=120.
 
-### D-029 [N] Defence resolves to effective HP
+### D-029 [N] Defense resolves to effective HP
 ```
 effective_mitigation = Σ (damage_share_of_category × mitigation_in_category)
 
@@ -254,6 +254,152 @@ cosmetic gain. Git is entirely unaffected.
 
 ---
 
+---
+
+## Canon review — Phase 1a (Bryan's pass on `docs/14-CANON.md`)
+
+### D-035 [N] American English throughout
+defense, offense, behavior, color, armor, center. Project files converted; v0 docs in
+Phase 7.
+
+### D-036 [R] `player` is the human, `valrune` is the ship
+Reverses `misc_ideas` line 10, which had `player` = ship and `user` = human. Every engine
+and code sample uses "player" for the human, so inverting it guarantees slips that are
+invisible until they are bugs. **`user` is banned.**
+
+### D-037 [R] Debris is threat class 0, and it acts
+Replaces the proposed inert "hazard". Debris drifts on a heading, meteors cross fast, a
+derelict gun spins and fires. It takes archetypes and role tags like any baddie; class 0
+governs only immunity and scaling. Ladder: **Debris, Minion, Elite, Miniboss, Boss.**
+
+### D-038 [N] Archetype id is descriptive; fiction name is display text
+The two were fused, so renaming the faction meant renaming code. Now:
+`drifter, weaver, charger, splitter, turret, shielder, miner, spawner`. Data references the
+id forever; `locale/` carries whatever the player sees.
+
+### D-039 [N] Affinity splits into attack and defense
+`attack_affinity` (types dealt) and `defense_affinity` (types taken). v0's single field
+made every baddie symmetrical — a baddie can hit with plasma while armored against cryo.
+
+### D-040 [R] `beam` means a continuous weapon effect
+Not a projectile stream. A beam impacts, then damages on ticks. **No hitscan-instant
+damage path is needed anywhere**, which removes an architecture branch. `lance` rejected.
+**`volley` banned** — synonym for gun-shot.
+
+### D-041 [N] Baddies and the Valrune share weapon vocabulary
+No separate baddie terms. Both have a **basic attack**; the Valrune's is a gun-shot, a
+baddie's may be a gun-shot, a spit, or a beam. Rules reference `is_basic_attack` and never
+ask who fired. Only `fire_rate` stays player-specific.
+
+### D-042 [N] Unbounded parameters are `null`
+`lifetime: null` = until the contract ends. `cooldown: null` = not applicable. Never
+sentinels like `-1`. The parameter always exists; its value may be unbounded.
+
+### D-043 [N] Drones are non-collidable with everything
+Not cover for the player, not an obstacle for baddies. Same-faction projectiles pass
+through as if absent. `faction: PLAYER | BADDIE`. Types so far: `hologram`, `undead`.
+
+### D-044 [R] Everything purchasable is a rank line
+**Rank tree / rank line / rank**, replacing stat tree / upgrade line / rank.
+**`element_level` becomes `element_rank`.**
+
+**An element is a rank line with 3 ranks priced in element points.** One `currency` field
+(`credits | element_points`) collapses two parallel systems. The only asymmetry is
+downstream — element ranks feed node tiers — which is a consumer, not a data difference.
+
+**Rank is a purchased step. Tier is a node's I/II/III.** Never interchanged.
+
+### D-045 [N] Empty nodes are never shown to the player
+The Hangar shows only nodes with authored abilities. No locked cells, no empty grid
+positions, no "coming soon". This is what makes sparse coverage (D-003) read as complete
+rather than unfinished.
+
+### D-046 [N] Abilities carry a delivery mode and travel-end conditions
+`delivery`: `homing` (retargets if the target dies mid-flight), `skillshot`, `fixed_point`,
+`self`, `attached`. `travel_end` is a **list** — `on_hit`, `on_distance`,
+`on_target_reached`, `on_lifetime` — whichever fires first triggers the arrival spec.
+Absent from the v0 model entirely.
+
+### D-047 [R] Full words for variables in code
+`duration`, `cooldown`, `radius`, `stacks`, `damage`. The `misc_ideas` line 12 short forms
+stay in the spreadsheets, where a column header supplies context; code has no column
+header and `c` sits next to `charges`, `cooldown`, and `combination`.
+
+**Band ids stay short** — `r1`, `dis2`, `w1` — because they are token values, not
+variables. `radius: "r2"` reads correctly.
+
+### D-048 [N] One universal tick
+```
+TICK = 0.2s          # every DoT, zone, beam, periodic anything
+TICK_FAST = 0.1s     # strict subdivision only
+```
+Buys determinism (one batch, one frame, stable order — independent timers drift and make
+replays diverge), legibility, and performance. Never a value like 0.15s that aligns with
+nothing.
+
+### D-049 [N] All probability is PRD
+No bare `randf() < chance` anywhere. Chance climbs on failure, resets on success, so
+streaks are impossible in both directions and the long-run rate matches nominal.
+
+**PRD state is per (entity, effect), never shared** — one entity's luck must not drain
+another's.
+
+Mean EHP in D-029 is unchanged; only variance tightens. This *strengthens* D-017, whose
+concern was slow convergence.
+
+### D-050 [C] A crit is not a source, but what a crit spawns is
+Refines `misc_ideas` line 24. "When a source causes X" does not fire because a hit
+critted — but VOID's on-crit gravity field is an object, and that object is a source. The
+event is not a source; the thing it creates is.
+
+### D-051 [N] Statuses have families, so `+` forms never get lost
+`burn` and `burn_plus` share `family: burn`. Every ability condition references the
+**family**, never a bare status id — "damages baddies with burn" always means burn+ too.
+Referencing a bare status id in a condition is a **validator error**, because it is nearly
+always this mistake.
+
+### D-052 [N] Element immunity cascades to that element's statuses
+A boss immune to plasma takes no burn and no burn+, with no per-status authoring. Makes
+`owner_element` functional rather than documentation. `owner_element: null` is legitimate
+for universal statuses (shield, stasis, paralyze, MaxHP_Loss, Override) — **there is no
+`Misc` element.** Any entity may also carry bespoke immunities per placement in wave data.
+
+### D-053 [R] Recall moves on the Y axis only
+The ready line is a **full horizontal line**, not a point. The Valrune drops straight down
+holding its X, rotating smoothly toward north in transit, finishing the rotation on arrival
+if the turn rate is too slow. v0's "bottom-center" would have yanked the player sideways
+and made recall a repositioning tool rather than a reset.
+
+### D-054 [N] Band ladders
+Radius and distance couple only at the short end:
+`dis_short = r_short`, `dis1 = r1`, `dis2` independent, **`dis3` = ready line to the top
+border** (the one band with physical meaning), `dis4` beyond it for wrapped angled shots
+and the open arena.
+
+Widths are Valrune-relative: `w0` projectile width, `w1` half the ship, `w2` full ship,
+`w3` two ships plus half a ship each side. Both ladders extend rather than special-case.
+
+### D-055 [R] Gravity disables self-movement; pull becomes the only movement
+Replaces D-025's "pull overrides movement", which implied arbitration. Bryan's model has
+none: nothing competes, so nothing resolves.
+
+Push and pull are `(distance, time)` **bands** — `push_1`, `pull_2` — keeping "short speedy
+Forge knock" and "slow heavy Void drag" as named constants. **`pull_stop_radius`** ends a
+pull at a ring while gravity keeps holding the target.
+
+### D-056 [R] `stage` and `throat` are banned
+**Contract** is the playable thing; playing it is just playing it. A single attempt is a
+**run** (`ContractRun`), for save data and analytics only. **Wormhole**, never "throat".
+Also banned: `level` (already means element rank), `mission`.
+
+### D-057 [N] Bounty
+Credits come from kills, slightly randomized like damage, summed at contract end. Baddies
+that escape past the Valrune are missed bounty — giving the wormhole's bottom edge a
+consequence without a fail state, and making `spawner` a soft DPS check. **Conflicts with
+v0 payout; see O-07.**
+
+---
+
 ## Open — not yet decided
 
 | # | Item | Blocks |
@@ -264,3 +410,10 @@ cosmetic gain. Git is entirely unaffected.
 | O-04 | Element point economy — 10 points, max level 3, 5 base elements needs 15 to max. Sparse coverage means some spreads unlock very little; the Hangar must show that before you spend | Phase 7 |
 | O-05 | Cross-axis parity — how a pure-defensive ability compares to a pure-offensive one. Starting heuristic: abilities declare a role, parity checked within role, cross-role weights set once | Phase 4, deferred until real data |
 | O-06 | Threat profile calibration — composition and hit size are guesses until M0 | M0 |
+| O-07 | **Bounty vs fixed payout.** D-057 makes credits kill-driven; v0 `04` §4.12 anchored payout to contract index precisely so farming an easy contract never beats playing a hard one, and so clearing fast never costs income. Fixes: cap bounty per contract, or make bounty the *presentation* of an index-anchored payout | Phase 7 |
+| O-08 | **`bulwark_percent` vs D-014.** A 25-rank percentage damage-reduction line sits outside the flat-values allowlist, and percentage mitigation is the worst offender for D-029's increasing-returns problem — it multiplies with evasion, rime, and shields | Phase 1b |
+| O-09 | **Field contract boundary.** Recommendation: a wrapping rectangle, not a disc. v0 argued a disc cannot wrap cleanly, which argues against the disc rather than against wrapping. A torus deletes the elastic pushback, boundary shader, and HUD arrow, and teaches one movement model. Costs: disorientation without landmarks, and fleeing a boss stops working. Minimap with baddie dots either way | Phase 7 |
+| O-10 | **Faction identity.** Not "the Hollow". Eldritch plus technology. Proposed data axis: `chassis: organic \| augmented` — organic is collision-focused and may die on impact or ignore it, augmented shoots. One field driving fiction and behavior together | Phase 7 |
+| O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
+| O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
+| O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |

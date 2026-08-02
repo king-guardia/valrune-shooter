@@ -30,6 +30,9 @@ If a constraint seems wrong, change the decision log first — never work around
   class. Resolution is one function:
   `can_apply(status, target, source) = !target.immune_to(status) || source.overrides(status)` *(D-015)*
 - **Buffs carry no immunity data.** *(D-015)*
+- **Conditions reference a status family, never a bare status id.** "Baddies with burn"
+  always means burn+ too. A bare status id in a condition is a validator error. *(D-051)*
+- **Immunity to an element implies immunity to that element's statuses.** *(D-052)*
 - **Control debuffs never land on bosses or minibosses, in any form.** The `+` form
   unlocks elites only. Damage and vulnerability debuffs pierce everything in `+` form. *(D-016)*
 - **Evasion applies only to basic projectile shots.** Never AoE, never a baddie's
@@ -40,19 +43,27 @@ If a constraint seems wrong, change the decision log first — never work around
 - **No balance numbers in code.** Everything lives in `data/*.json`.
 - **Flat values, not percentages.** The allowlist is closed: crit chance, crit damage,
   Overclock. Adding to it requires an ADR. *(D-014)*
-- **Geometry references bands, never raw numbers.** `r1`, `dis2`, `w1`, `push_impulse`,
-  `pull_speed`. The playfield is 1000 units wide. *(D-024, D-025, D-026)*
+- **Geometry references bands, never raw numbers.** `r1`, `dis2`, `w1`, `push_1`,
+  `pull_2`. The playfield is 1000 units wide. *(D-024, D-054)*
 - **Costs are arithmetic:** `base + step × (rank − 1)`. Never geometric.
 - **Maximum ability cooldown is 2 minutes.** *(D-023)*
 - **No upgrade, node, or ability increases credit gain.**
+- **One universal tick: `TICK = 0.2s`.** Every DoT, zone, beam, and periodic effect lands
+  on that boundary. Faster needs a strict subdivision (`TICK_FAST = 0.1s`), never an
+  unaligned value. *(D-048)*
+- **All probability is PRD.** No bare `randf() < chance` anywhere. State is per
+  (entity, effect), never shared. *(D-049)*
+- **Unbounded means `null`**, never a sentinel like `-1`. *(D-042)*
 
 ## Scope
 
 - **Never introduce global game-speed manipulation.** Per-target speed multipliers,
   deferred-damage queues, and personal cooldown-rate multipliers are the approved
   mechanisms. *(D-019)*
-- **Drones are undamageable and untargetable.** They have no HP and cannot absorb hits
-  for the player. *(D-020)*
+- **Drones are undamageable, untargetable, and non-collidable.** No HP, no absorbing hits
+  for the player, no blocking baddies. *(D-020, D-043)*
+- **No friendly fire in either direction.** Same-faction projectiles pass through as if
+  absent. Player objects never hurt the Valrune; baddie effects never hurt baddies.
 - **Loadout is 3 passives + 1 active + 1 auto-active.** The active slot may toggle to
   auto. No other slot counts. *(D-022)*
 - **Triples are hand-authored.** Do not compose them from their duals — that rule was
@@ -73,4 +84,4 @@ If a constraint seems wrong, change the decision log first — never work around
 - Never `instantiate()` during combat. Use the object pools.
 - Wave coordinates are playfield units or percentages, never pixels.
 - Reference user-facing strings by key from `locale/`. Never hardcode.
-- A new enemy behaviour type requires an ADR.
+- A new enemy behavior type requires an ADR.

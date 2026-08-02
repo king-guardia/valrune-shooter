@@ -23,7 +23,7 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 
 - [x] `docs/14-CANON.md` drafted — 11 sections, every term with a code identifier
   - [x] People and ships · baddies · spawned objects · weapons · elements
-  - [x] Progression · ability anatomy · damage · statuses · geometry · structure · behaviour
+  - [x] Progression · ability anatomy · damage · statuses · geometry · structure · behavior
   - [x] `basic attack` vs `ability` vs `contact damage` — the D-017 blocker
   - [ ] **Bryan reviews and corrects — 9 open questions at the bottom of the file**
     - Only Q3 (is GAMMA's "beam" a real continuous weapon?) has downstream cost;
@@ -47,7 +47,7 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 - [ ] Entity model · ability model · status model with immunity resolution
 - [ ] Damage-flow sequence diagram for one gun-shot
 - [ ] Baddie action state machine (overlapping move/idle/shoot, telegraph windows)
-- [ ] Drone behaviour state machine · deferred-damage queue
+- [ ] Drone behavior state machine · deferred-damage queue
 - [ ] **Bryan reviews and critiques**
 
 ## Phase 4 — Balance Lab

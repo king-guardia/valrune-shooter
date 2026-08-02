@@ -20,8 +20,12 @@ Everything else under `data/` is generated or hand-maintained against the schema
 - **Numeric ability parameters may be `null`.** Structure is authored first; numbers
   come from the Balance Lab and the calibrator. A `null` is a to-do, not a defect.
 - Coordinates are playfield units (0–1000 on x) or percentages. Never pixels.
-- Statuses carry `polarity` and `tags`. Immunity is derived from tags — do not
-  hand-enumerate boss/miniboss/elite booleans per status.
+- Statuses carry `polarity`, `tags`, `family`, and `owner_element`. Immunity is derived
+  from tags — do not hand-enumerate boss/miniboss/elite booleans per status.
+- **Ability conditions reference a status `family`, never a bare status id**, so the `+`
+  forms are never silently excluded (D-051).
+- **Unbounded values are `null`** — `lifetime: null`, `cooldown: null`. Never `-1` (D-042).
+- Every baddie carries both `attack_affinity` and `defense_affinity` (D-039).
 - Every effect must reference a primitive that exists in `primitives.json`.
 - No node may reference a credit-granting primitive.
 - It is **ETHER**, never AETHER.
