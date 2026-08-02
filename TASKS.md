@@ -21,13 +21,13 @@ ideas that aren't happening yet go in `docs/13-OPEN-DECISIONS.md` §13.5.
 
 **1a is a hard gate. Nothing in Phase 2 starts until Bryan has corrected the glossary.**
 
-- [ ] `docs/14-CANON.md` — every term with a one-line definition and its code identifier
-  - [ ] Entities: valrune, player, user, baddie, minion, elite, miniboss, boss, drone, debris, field object
-  - [ ] Weapons: gun, gun-shot, projectile, volley, beam, attunement — **and `basic attack` vs `ability` on the baddie side**
-  - [ ] Progression: credit upgrade, upgrade line, rank, element point, element level, node, ability, tier, slot, loadout
-  - [ ] Ability anatomy: trigger, target spec, arrival spec, duration, cooldown, charge, tick
-  - [ ] Geometry: bow, stern, ground, playfield, ready line
-  - [ ] **Bryan reviews and corrects**
+- [x] `docs/14-CANON.md` drafted — 11 sections, every term with a code identifier
+  - [x] People and ships · baddies · spawned objects · weapons · elements
+  - [x] Progression · ability anatomy · damage · statuses · geometry · structure · behaviour
+  - [x] `basic attack` vs `ability` vs `contact damage` — the D-017 blocker
+  - [ ] **Bryan reviews and corrects — 9 open questions at the bottom of the file**
+    - Only Q3 (is GAMMA's "beam" a real continuous weapon?) has downstream cost;
+      it decides whether a hitscan damage path is needed at all. The rest are naming.
 - [ ] `docs/15-CONSTANTS.md` — band values, playfield units, variable naming
   - [ ] Resolve O-01: the percentage allowlist
 - [ ] `docs/16-STATUS-EFFECTS.md` — status catalog, tags, ImmunitySet/OverrideSet
