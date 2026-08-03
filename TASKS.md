@@ -60,9 +60,14 @@ Everything still open is an **M0 measurement, not a desk decision** — Expanse 
 - [x] **Revision 2** — duration policy (riders fixed, payloads from source), stack-ramp model
       for the Balance Lab, lockout family collapsed. `stasis` deleted, `paralyze_plus` added
       (D-093 to D-098). Resolved O-29, O-31, O-32
-- [ ] **Bryan reviews conflicts §7.1–7.11 and the 5 remaining open questions**
-      The two that are bugs rather than inconsistencies: base `override` is a no-op, and the
-      `Shield` status collides with the `shield` rank line
+- [x] **Revision 3** — stacking debuffs reach elites, `radiate` becomes flat bonuses, gravity
+      fields bend projectiles (D-099, D-100). Resolved O-28, O-33, O-34
+- [ ] **Bryan reviews conflicts §7.1, 7.2, 7.4, 7.5, 7.7, 7.9, 7.11** — the ones not yet
+      confirmed. The two that are bugs rather than inconsistencies: base `override` is a
+      no-op, and the `Shield` status collides with the `shield` rank line
+
+Three questions remain, all deferrable: is `rime`'s recoil a basic attack, does anything strip
+a ward, and how many gravity fields may coexist.
 
 ### 1d — ADRs ← **NEXT**
 

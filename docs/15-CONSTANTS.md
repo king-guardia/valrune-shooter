@@ -658,6 +658,14 @@ Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 | 5 | **200 baddies at 75 units each** is a rendering and collision load worth proving early on a real mid-range phone | M0 |
 | 6 | **Pricing `piercing`** — a 5× crowd multiplier at 4 ranks, and `guns × piercing × attack_speed` compounds to roughly 75× | Phase 4 |
 
+### Status constants (D-098, D-100)
+
+```
+WARD_CHARGE_COOLDOWN = 1.0s     Fixed — stops piercing stripping a ward in one gun-shot
+RADIATE_REACH_BONUS  = 100      Starting point
+RADIATE_RADIUS_BONUS =  50      Starting point — half, because area scales quadratically
+```
+
 O-21 is resolved: `CLUSTERING_BLIND = 1.85`, `CLUSTERING_AIMED = 2.50`, with decay by
 coverage. Still a Balance Lab slider, but it is now anchored to a measurement instead of a
 guess.

@@ -1,7 +1,8 @@
 # 16 — Status Effects
 
-**Status: draft, revision 2 — duration policy set, lockout family collapsed.** Vocabulary is
-fixed by [`14-CANON.md`](14-CANON.md) §8; numbers by [`15-CONSTANTS.md`](15-CONSTANTS.md).
+**Status: draft, revision 3 — duration policy set, lockout family collapsed, gravity extended
+to projectiles.** Vocabulary is fixed by [`14-CANON.md`](14-CANON.md) §8; numbers by
+[`15-CONSTANTS.md`](15-CONSTANTS.md).
 
 This catalogs the statuses in `data/source/buffs_debuffs.csv`, settles the tag taxonomy (O-02)
 and `invisible`'s owner (O-13), and specifies how immunity and override resolve.
@@ -24,9 +25,9 @@ immune columns. `minion` also covers debris.
 
 | Id | Family | Element | Polarity | Tags | Duration | Stacks | Max class |
 |---|---|---|---|---|---|---|---|
-| `corrosion` | corrosion | CAUSTIC | debuff | `reactive` | 10s | 5 | minion |
+| `corrosion` | corrosion | CAUSTIC | debuff | `reactive` | 10s | 5 | **elite** |
 | `corrosion_plus` | corrosion | CAUSTIC | debuff | `reactive` | 10s | 5 | boss |
-| `poison` | poison | CAUSTIC | debuff | `weakness` | 10s | 5 | minion |
+| `poison` | poison | CAUSTIC | debuff | `weakness` | 10s | 5 | **elite** |
 | `poison_plus` | poison | CAUSTIC | debuff | `weakness` | 10s | 5 | boss |
 | `slow` | slow | CHRONO | debuff | `control` | 3s | — | minion |
 | `slow_plus` | slow | CHRONO | debuff | `control` | 3s | — | elite |
@@ -48,7 +49,7 @@ immune columns. `minion` also covers debris.
 | `gravity_plus` | gravity | VOID | debuff | `control` | source | — | elite ⚠ |
 | `shock` | shock | VOLT | debuff | `reactive` | 5s | — | minion |
 | `shock_plus` | shock | VOLT | debuff | `reactive` | 5s | — | boss |
-| `maxhp_loss` | maxhp_loss | — | debuff | `vulnerability` | source | 5 | boss ⚠ |
+| `maxhp_loss` | maxhp_loss | — | debuff | `vulnerability` | source | 5 | **elite** ⚠ |
 | `maxhp_loss_plus` | maxhp_loss | — | debuff | `vulnerability` | source | 5 | boss |
 | `maxhp_gain` | maxhp_gain | — | buff | — | source | — | any |
 | `maxhp_gain_plus` | maxhp_gain | — | buff | — | source | — | any |
@@ -185,17 +186,17 @@ can only be applied to things that die in about two seconds, and their entire me
 accumulation over time. All the value sits in `corrosion_plus` and `poison_plus`, which reach
 bosses. The base forms are stubs.
 
-Three ways out:
+**Resolved (D-099): stacking debuffs are exempt from the ladder's base restriction.** Base
+`corrosion`, `poison`, and `maxhp_loss` reach **elites** — long enough for three or four stacks
+— while `+` forms still gate bosses and minibosses. D-016 exists to keep boss fights authorable,
+and corrosion stacking on an elite does not threaten that.
 
-- **Exempt stacking debuffs from the ladder's base restriction**, letting base forms reach
-  **elites** — long enough for three or four stacks — while `+` forms still gate bosses and
-  minibosses. Preserves what D-016 is actually protecting.
-- **Accept it** and price the base forms as pure chaff-clear, which means accepting that two of
-  your four CAUSTIC statuses are filler.
-- **Lower the cap and raise per-stack value** so ramp is fast enough to matter in two seconds.
+This is the **one exception** to the generated-immunity rule in §6, so the generator needs it as
+an explicit clause rather than leaving it to be discovered:
 
-**I lean the first.** D-016 exists to keep boss fights authorable, and letting corrosion stack
-on an elite does not threaten that.
+```
+if debuff.stacks and form == base:  max_class = elite
+```
 
 ---
 
@@ -452,6 +453,17 @@ those inside a radius is a handful of lines and is fully deterministic. The perf
 question is how many gravity fields can exist at once, which is a wave-authoring limit rather
 than an engine problem.
 
+**Confirmed for the schema (D-096), ungated** — base gravity fields bend projectiles too, since
+gating it behind the `+` form would leave base VOID as a plain slow, which every element already
+has a version of.
+
+Two rules it needs, both of which prevent obvious exploits:
+
+- **A gravity field bends projectiles from both factions.** Bending only incoming fire would
+  make it a pure defensive wall with no cost, and no reason ever not to place one.
+- **Bending changes trajectory, never lifetime or damage.** A projectile curved into a longer
+  path does not get extra `travel_end` distance, or gravity becomes a range buff by accident.
+
 ### 7.4 `stagger` is shorter than a tick
 
 Authored at **0.05s and 0.09s** against `TICK = 0.2s` (D-048). Neither can be represented on
@@ -485,33 +497,47 @@ That covers crit chance, crit damage, Overclock, evasion, and slow without needi
 maintained list, and it still bans the thing D-014 was actually aimed at — `+8% velocity`
 style rank lines that compound into increasing returns.
 
-### 7.6 `radiate`'s band shift is now wildly non-uniform
+### 7.6 `radiate` becomes a flat bonus, not a band shift
 
-Radiate promotes an ability's geometry one rung: `r_short → r1 → r2 → r3`. That was roughly
-even on the old evenly-spaced ladders. On the D-073 ladders it is not:
+Radiate promoted an ability's geometry one rung: `r_short → r1 → r2 → r3`. That was roughly even
+on the old evenly-spaced ladders. On the D-073 ladders it was not:
 
 | Shift | Gain |
 |---|---|
 | `r_short → r1` | +50 units |
 | `r2 → r3` | +150 units |
-| `dis2 → dis3` | +455 units |
 | `dis3 → dis4` | **+800 units** |
 
-**The same buff is worth sixteen times more on one ability than another**, decided entirely by
-which rung the ability happened to be authored at. And there is no rule for what happens at
-the top of a ladder.
+**The same buff was worth sixteen times more on one ability than another**, decided entirely by
+which rung the ability happened to be authored at — and nothing defined what happened at the top
+of a ladder.
 
-Three ways out, and this needs your call:
+**Resolved (D-100): flat additive bonuses, with reach and radius getting different numbers.**
 
-- **Cap at the top rung.** Simple; makes radiate dead on max-range abilities.
-- **Percentage increase instead of a band shift** — say +50% radius. Uniform by construction,
-  but produces off-band geometry, which §5 of the constants exists to prevent.
-- **A flat additive bonus** — say +100 units of radius or reach. Uniform, stays roughly
-  on-band, and is worth proportionally more to small abilities, which is arguably correct
-  since they are the ones that need help.
+```
+RADIATE_REACH_BONUS  = 100 units
+RADIATE_RADIUS_BONUS =  50 units
+```
 
-**I lean the flat bonus.** It respects D-014, it cannot break at the top of a ladder, and it
-does not require radiate to know what band its target ability used.
+**Radius gets the smaller number because area scales quadratically.** A flat bonus to a squared
+quantity is worth far more than the same bonus to a linear one, so equal numbers would have
+quietly reintroduced the imbalance this is fixing:
+
+| Applied to | Before | After | Value |
+|---|---|---|---|
+| `r1` radius | 150 | 200 | **1.78×** area |
+| `r3` radius | 400 | 450 | **1.27×** area |
+| `dis1` reach | 95 | 195 | **2.05×** |
+| `dis4` reach | 1600 | 1700 | **1.06×** |
+
+Still not perfectly uniform, but a 1.9× spread against the band shift's 16×, and it tilts toward
+small abilities — which is the right direction, since they are the ones that need help.
+
+**Off-band results are fine here.** The constants file governs what gets *authored*, not what
+geometry exists at runtime; a 200-unit radius that only exists for five seconds breaks nothing.
+
+`radiate` grants reach only; `radiate_plus` grants both and applies to every ability for its
+duration rather than just the next one.
 
 ### 7.7 `maxhp_loss` breaks the ladder in its base form
 
@@ -649,11 +675,10 @@ is stasis's control-lockout clause, which genuinely has no baddie-side meaning.
 
 | # | Question | Blocks |
 |---|---|---|
-| 1 | **`radiate`'s band shift** — cap, percentage, or flat bonus? §7.6. Leaning flat | Phase 2 |
-| 2 | **Stacking versus the threat ladder** — base `corrosion` and `poison` can only land on targets that die before stacks accumulate. Let base stacking debuffs reach elites? §3 | Phase 2 |
-| 3 | **Is `rime`'s recoil a basic attack?** If it is, it can be evaded, and two rimed entities shooting each other need a recursion guard | Phase 2 |
-| 4 | **Gravity affecting projectiles** is new scope, not a correction — worth confirming before it lands in the schema. §7.3b | Phase 2 |
-| 5 | **Does anything strip a `ward`?** Good elite mechanic, deliberately deferred until ward is in and felt | M1 |
+| 1 | **Is `rime`'s recoil a basic attack?** If it is, it can be evaded, and two rimed entities shooting each other need a recursion guard | Phase 2 |
+| 2 | **Does anything strip a `ward`?** Good elite mechanic, deliberately deferred until ward is in and felt | M1 |
+| 3 | **How many gravity fields may exist at once?** A wave-authoring limit rather than an engine problem, but it needs a number before the Expanse gets authored | M1 |
 
-Resolved this pass: O-29 (`paralyze` gains a base form), O-31 (ward's internal cooldown),
-O-32 (`stasis` deleted).
+Resolved this pass: O-28 (radiate flat), O-29 (`paralyze` gains a base form), O-31 (ward's
+internal cooldown), O-32 (`stasis` deleted), O-33 (stacking reaches elites), O-34 (gravity
+bends projectiles).

@@ -1064,8 +1064,14 @@ target, gravity displaces regardless of intent, and the two forces sum cleanly.
 pulled"; projectile bending is a property of the field doing the pulling.
 
 Cheap and deterministic — projectiles already carry position and velocity. The real limit is how
-many gravity fields exist at once, which is wave authoring rather than engine work. Logged as
-O-34 since this is new scope rather than a correction.
+many gravity fields exist at once, which is wave authoring rather than engine work.
+
+**Confirmed ungated** — base gravity fields bend projectiles too. Gating it behind the `+` form
+would leave base VOID as a plain slow, which every element already has a version of.
+
+Two rules prevent the obvious exploits: **a field bends projectiles from both factions** (bending
+only incoming fire would be a costless defensive wall), and **bending changes trajectory, never
+lifetime or damage** (or a curved projectile's longer path becomes an accidental range buff).
 
 ### D-097 [R] The defensive statuses are four flags, not five statuses
 `ethereal`, `damage_immune`, `untargetable`, and `invisible` overlapped because each was defined
@@ -1107,6 +1113,40 @@ An HP-pool ward was rejected as duplicating the `shield` rank line, and basic-at
 a third answer to a question `evasion` and `ethereal` already answer twice. Ward-stripping stays
 available as an elite mechanic but is deferred — additional scope, not a fix.
 
+### D-099 [N] Stacking debuffs are exempt from the ladder's base restriction — O-33 resolved
+Base `corrosion`, `poison`, and `maxhp_loss` reach **elites**. Under D-016 they were locked to
+minions and debris, which die in about two seconds — before a 5-stack mechanic accumulates
+anything. All value sat in the `+` forms and the base forms were stubs.
+
+`+` forms still gate bosses and minibosses, so D-016 keeps protecting what it exists to protect.
+
+**This is the one exception to D-092's generated immunity columns**, and the generator needs it
+as an explicit clause rather than something to be rediscovered:
+
+```
+if debuff.stacks and form == base:  max_class = elite
+```
+
+### D-100 [R] `radiate` grants flat bonuses, not a band shift — O-28 resolved
+The band shift promoted geometry one rung, which was even on the old ladders and is not on
+D-073's: `r_short → r1` gained 50 units while `dis3 → dis4` gained 800. **The same buff was worth
+sixteen times more on one ability than another**, decided by which rung the author happened to
+pick, and nothing defined behavior at the top of a ladder.
+
+```
+RADIATE_REACH_BONUS  = 100 units
+RADIATE_RADIUS_BONUS =  50 units
+```
+
+**Radius takes the smaller number because area scales quadratically** — equal numbers would have
+quietly reintroduced the imbalance being fixed. Result is a 1.9× spread instead of 16×, tilted
+toward small abilities, which is the right direction.
+
+Off-band runtime geometry is acceptable: the constants file governs what gets *authored*, and a
+200-unit radius existing for five seconds breaks nothing.
+
+`radiate` grants reach; `radiate_plus` grants both and covers every ability for its duration.
+
 ### D-071 [N] The Expanse is 6000 × 6000
 Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
 cross at base speed.
@@ -1133,13 +1173,14 @@ cross at base speed.
 | O-22 | ~~Is the 18° homing ceiling too steep?~~ — **resolved by D-080** at 3.5°, capped on lateral reach | ✅ |
 | O-26 | **Pricing `piercing`.** At 4 ranks it is a 5× damage multiplier in crowds. Too cheap and single-target guns answer every encounter; too dear and the AoE gap stays open | Phase 4 |
 | O-27 | **Abilities that grant piercing need reworking** against the new rank line rather than stacking with it | Phase 2 |
-| O-28 | **`radiate`'s band shift is non-uniform** on the D-073 ladders — the same buff is worth +50 units on one ability and +800 on another. Cap, percentage, or flat bonus? Leaning flat | Phase 2 |
+| O-28 | ~~`radiate`'s band shift is non-uniform~~ — **resolved by D-100.** Flat bonuses, 100 reach / 50 radius | ✅ |
 | O-29 | ~~`paralyze` has a `+` form's reach with no base form~~ — **resolved by D-095.** It has both now | ✅ |
 | O-30 | **Is `rime`'s recoil a basic attack?** If so it is evadable, and two rimed entities shooting each other need a recursion guard | Phase 2 |
 | O-31 | ~~Does `ward` block a gun-shot or a hit?~~ — **resolved by D-098.** The internal cooldown makes it one charge per gun-shot | ✅ |
 | O-32 | ~~`stasis` — who applies it, and to whom?~~ — **dissolved by D-095.** Deleted | ✅ |
-| O-33 | **Stacking versus the threat ladder.** Base `corrosion` and `poison` can only land on targets that die before stacks accumulate, making them stubs. Let base stacking debuffs reach elites? | Phase 2 |
-| O-34 | **Gravity bending projectiles** (D-096) is new scope rather than a correction — worth confirming before it enters the schema | Phase 2 |
+| O-33 | ~~Stacking versus the threat ladder~~ — **resolved by D-099.** Base stacking debuffs reach elites | ✅ |
+| O-34 | ~~Gravity bending projectiles~~ — **confirmed by D-096**, ungated | ✅ |
+| O-35 | **How many gravity fields may exist at once?** Wave-authoring limit, but it needs a number before the Expanse is authored | M1 |
 | O-23 | ~~Homing plus velocity inheritance~~ — **dissolved by D-076.** Distance-denominated correction makes the path speed-invariant, so the interaction cannot occur | ✅ |
 | O-24 | **Every AoE ability is now worth 6–14× what the last revision assumed** (D-079). No authored damage number has been checked against the new counts | Phase 4 |
 | O-25 | **200 baddies at 75 units** is a rendering and collision claim, not a design one. Prove it on a real mid-range phone | M0 |
