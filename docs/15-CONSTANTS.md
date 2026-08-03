@@ -376,6 +376,11 @@ WINDOW       = 120s     Fixed (D-028) — the balance measurement window
 COOLDOWN_MAX = 120s     Fixed (D-023)
 ```
 
+**Every status duration must be a multiple of `TICK_FAST`** (D-089). This is not cosmetic: an
+off-grid duration produces a final partial tick whose damage depends on floating-point drift,
+which breaks determinism. `stagger` was authored at 0.05s and `stagger_plus` at 0.09s — both
+below tick resolution — and move to **0.1s and 0.2s**.
+
 ---
 
 ## 9. The Expanse

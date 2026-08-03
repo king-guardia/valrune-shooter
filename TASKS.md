@@ -50,10 +50,19 @@ Everything still open is an **M0 measurement, not a desk decision** — Expanse 
 > **Carried into Phase 4:** baddie counts tripled, so every AoE ability is worth 6–14× what
 > the previous numbers implied. No authored damage value has been checked against this.
 
-### 1c/1d — Statuses and ADRs ← **NEXT**
+### 1c — Statuses (drafted)
 
-- [ ] `docs/16-STATUS-EFFECTS.md` — catalog, tags, families, ImmunitySet/OverrideSet
-  - [ ] Resolve O-02 (tag taxonomy) and O-13 (who owns `invisible`)
+- [x] `docs/16-STATUS-EFFECTS.md` — 35 statuses, 20 families, tags, ImmunitySet/OverrideSet
+- [x] Resolved O-02 (six tags, not five) and O-13 (`invisible` → GAMMA)
+- [x] Audited all 17 debuffs against D-016 — 15 matched, so the 51 immune booleans become
+      **generated** from tag plus form rather than authored
+- [x] 10 decisions recorded (D-083 to D-092)
+- [ ] **Bryan reviews — 11 conflicts found, 5 open questions**
+      The two that are bugs rather than inconsistencies: base `override` is a no-op, and the
+      `Shield` status collides with the `shield` rank line
+
+### 1d — ADRs ← **NEXT**
+
 - [ ] Expand load-bearing decisions into full ADRs (D-007, D-009, D-015, D-019, D-029)
 
 ## Phase 2 — Data model and gap report

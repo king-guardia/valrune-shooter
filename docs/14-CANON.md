@@ -423,7 +423,7 @@ all: the reason scoping was needed was slow convergence, and PRD converges much 
 | **Status** | Any timed effect on an entity. | `Status` |
 | **Buff / Debuff** | Beneficial / detrimental. Buffs carry no immunity data (D-015). | `polarity` |
 | **Family** | **The group a status and its `+` forms share.** See below. | `family` |
-| **Tag** | Behavior class driving immunity: `control`, `dot`, `vulnerability`, `avoidance`, `movement`. | `tags` |
+| **Tag** | Behavior class driving immunity: `control`, `dot`, `reactive`, `vulnerability`, `weakness`, `avoidance`. Six, not D-015's five — see [`16-STATUS-EFFECTS.md`](16-STATUS-EFFECTS.md) §2. | `tags` |
 | **Stack** | One application. A new stack resets the timer for **all** stacks (line 39). | `stacks` |
 | **The `+` form** | A stronger variant that pierces further up the threat ladder (D-016). A **separate status**, not a stack level. | `burn_plus` |
 | **Owner element** | The element a status belongs to. May be `null`. | `owner_element` |
@@ -459,10 +459,9 @@ A boss immune to plasma takes no burn and no burn+, automatically, with no per-s
 authoring. That falls out of `owner_element` for free and is why the field earns its
 place.
 
-`owner_element: null` is legitimate for genuinely universal statuses — shield, stasis,
-paralyze, MaxHP_Loss, Override. There is **no `Misc` element**; that column in
-`buffs_debuffs.csv` is a spreadsheet convenience. Invisible is unassigned and probably
-wants an owner [OPEN] — you leaned GAMMA, since ETHER already carries several.
+`owner_element: null` is legitimate for genuinely universal statuses — ward, stasis,
+paralyze, maxhp_loss, override. There is **no `Misc` element**; that column in
+`buffs_debuffs.csv` is a spreadsheet convenience. **`invisible` belongs to GAMMA** (D-085).
 
 Beyond the threat-class ladder, **any entity may carry bespoke immunities or overrides**
 per placement in wave data. The lava boss is authored, not a new system.

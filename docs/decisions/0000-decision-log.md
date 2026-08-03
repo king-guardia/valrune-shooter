@@ -863,6 +863,130 @@ dimension.
 for most of the game. Priced cheap, single-target guns become the answer to every encounter
 and the AoE abilities are weak again — the same problem inverted.
 
+---
+
+## Statuses — Phase 1c
+
+Full catalog and reasoning in [`16-STATUS-EFFECTS.md`](../16-STATUS-EFFECTS.md).
+
+### D-083 [N] Stacks cap per family, not per status id
+Only corrosion, poison, and maxhp_loss stack, all at 5. Per-id caps would make mixing a base
+and `+` form a way to double the cap — nobody would author that deliberately and everybody
+would find it. Each stack keeps its own magnitude, so 3 base + 2 plus deals `3n + 2y` rather
+than averaging. A new stack resets the timer for all stacks in the family.
+
+### D-084 [R] The tag taxonomy is six, not five — O-02 resolved
+D-015 proposed `control`, `dot`, `vulnerability`, `avoidance`, `movement`. Tested against all
+20 families, two failed and one had no members:
+
+| Tag | Means |
+|---|---|
+| `control` | Restricts movement or action |
+| `dot` | Damages the bearer on its own timer |
+| `reactive` | Adds damage only when something else hits the bearer |
+| `vulnerability` | Bearer takes more damage, or has less HP |
+| `weakness` | Bearer **deals** less damage |
+| `avoidance` | Bearer cannot be hit |
+
+**`movement` deleted — it had no members.** Push and pull stopped being statuses at D-075;
+slow is `control`. An empty tag means immunity authors track two names for one concept and
+eventually forget one on a boss.
+
+**`weakness` split from `vulnerability`.** Poison makes the bearer deal less; corrosion makes
+it take more. Opposite directions, and one immunity should not silently cover both.
+
+**`reactive` split from `dot`.** Burn ticks by itself; corrosion and shock fire only when
+something else lands a hit. **Burn kills a fleeing baddie, corrosion does not** — tagging them
+alike would make the engine value conditional damage as guaranteed.
+
+**Tags on debuffs feed ImmunitySet; tags on buffs feed OverrideSet.** Same field, two
+consumers, no overlap — which is how `avoidance` covers ethereal and evasion without
+contradicting D-015's rule that buffs carry no immunity data.
+
+### D-085 [N] `invisible` belongs to GAMMA — O-13 resolved
+Your lean, with a mechanical argument behind it. Gamma owns `radiate`, which manipulates how
+far effects reach; invisibility is the same idea inverted, manipulating whether you register
+at all. And ETHER already owns both avoidance families — a third would make ETHER the answer
+to every defensive question and leave GAMMA with no survivability at all.
+
+### D-086 [R] `override` reworked — the base form did nothing
+As authored, base override let **non-basic attacks** pierce `ethereal` and `evasion`. Both only
+ever block basic attacks (ethereal by definition, evasion by D-017), so a non-basic attack
+already landed against both. **It granted permission that was never withheld** — a purchasable
+no-op that would survive playtesting, because nobody can perceive the absence of an effect
+that never existed.
+
+Moved one rung down rather than up:
+
+| Status | Pierces |
+|---|---|
+| `override` | Your **basic attacks** pierce `ethereal` and `evasion` |
+| `override_plus` | **Everything you do** pierces both families entire, including `evasion_plus_plus` |
+
+The base now does the obvious job, and the `+` gains a unique capability, since
+`evasion_plus_plus` is otherwise unpierceable by anything in the game.
+
+### D-087 [N] The `Shield` status is renamed `ward`
+It collided with the `shield` rank line, and the two are not variations on a theme: the rank
+line is a **regenerating pool**, the status is **N charges each negating one hit entirely**.
+They behave differently against one big hit versus many small ones, which is exactly what a
+player needs to reason about.
+
+**The collision produces wrong behavior rather than an error** — `entity.shield` is ambiguous
+and both readings compile. The status is the cheaper side to rename, being referenced by a
+handful of abilities rather than the whole progression tree.
+
+### D-088 [R] `stasis` is a debuff
+Marked a buff, but it is `paralyze` plus rotation lock plus passive suspension plus recall
+denial — strictly worse than a status the same file calls a debuff.
+
+**Polarity describes the effect on the bearer, not the intent of whoever applied it.**
+
+This is load-bearing, not bookkeeping: D-015 says buffs carry no immunity data, so left as a
+buff **nothing could ever be immune to stasis**, including the bosses the `control` ladder
+exists to protect. The pause-all-durations clause stays as a property of the status.
+
+### D-089 [N] Every status duration is a multiple of `TICK_FAST`
+`stagger` at 0.05s and `stagger_plus` at 0.09s were both below tick resolution and would have
+rounded 2–4× off intent. They become **0.1s and 0.2s** — still a stutter rather than a stun,
+now deterministic.
+
+The general rule matters more than the fix: an off-grid duration produces a final partial tick
+whose damage depends on floating-point drift.
+
+### D-090 [R] D-014's percentage rule restated as a principle
+`slow` (0.85× / 0.65× speed) and `evasion` (15/25/35%) both violated the closed allowlist, and
+**flat values are genuinely wrong for both** — a flat −18 u/s slow nearly stops a 120 u/s
+minion and is imperceptible on a 1000 u/s Valrune.
+
+Replacing the maintained list with a rule:
+
+> Percentages are allowed where the quantity is **inherently a chance or a multiplier**. Every
+> additive stat bonus is flat.
+
+Covers crit chance, crit damage, Overclock, evasion, and slow without a list to maintain, and
+still bans what D-014 was aimed at: `+8% velocity` rank lines that compound into increasing
+returns.
+
+### D-091 [N] Three catalog corrections
+- **`maxhp_loss` base drops to `minion` reach.** It was immune on nothing, meaning the base
+  form landed on bosses when by D-016 only `+` forms should. Almost certainly an oversight,
+  since `maxhp_loss_plus` would otherwise be identical.
+- **`damage_immune` decomposes.** It granted damage immunity *and* debuff immunity, the second
+  being exactly what ImmunitySet does. It now grants damage immunity and adds every debuff tag
+  to the bearer's ImmunitySet — same behavior, no special case, and "immune to damage but still
+  debuffable" becomes authorable.
+- **`invisible` grants `untargetable`** rather than restating the targeting rules, including
+  the clause about launched abilities flying straight instead of homing.
+
+### D-092 [N] The immune columns are generated, not authored
+Auditing all 17 debuffs against D-016, **15 matched exactly** and the two exceptions are
+addressed in D-091 and O-29. So the three immune columns are a **consequence of tag plus
+form**, not data.
+
+Phase 2 generates them. That removes 51 hand-maintained booleans and, more usefully, makes it
+structurally impossible to author a boss that is accidentally stunnable.
+
 ### D-071 [N] The Expanse is 6000 × 6000
 Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
 cross at base speed.
@@ -873,14 +997,14 @@ cross at base speed.
 
 | # | Item | Blocks |
 |---|---|---|
-| O-02 | Status tag taxonomy — do the five tags carve the space correctly? | Phase 1d |
+| O-02 | ~~Status tag taxonomy~~ — **resolved by D-084.** Six tags, not five | ✅ |
 | O-03 | Chrono+Cryo passive replacement (slot vacated by D-019) | Content, not blocking |
 | O-04 | Element point economy — 10 points, max level 3, 5 base elements needs 15 to max. Sparse coverage means some spreads unlock very little; the Hangar must show that before you spend | Phase 7 |
 | O-05 | Cross-axis parity — how a pure-defensive ability compares to a pure-offensive one. Starting heuristic: abilities declare a role, parity checked within role, cross-role weights set once | Phase 4, deferred until real data |
 | O-06 | Threat profile calibration — composition and hit size are guesses until M0 | M0 |
 | O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
-| O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |
+| O-13 | ~~Which element owns `invisible`~~ — **resolved by D-085.** GAMMA | ✅ |
 | O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `UNFORMED` and the fiction oddity costs nothing | Phase 2 |
 | O-17 | **Expanse at 6000².** Six seconds to cross at base speed. A torus too large stops reading as a torus and becomes an empty box | M0 |
 | O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
@@ -889,6 +1013,11 @@ cross at base speed.
 | O-22 | ~~Is the 18° homing ceiling too steep?~~ — **resolved by D-080** at 3.5°, capped on lateral reach | ✅ |
 | O-26 | **Pricing `piercing`.** At 4 ranks it is a 5× damage multiplier in crowds. Too cheap and single-target guns answer every encounter; too dear and the AoE gap stays open | Phase 4 |
 | O-27 | **Abilities that grant piercing need reworking** against the new rank line rather than stacking with it | Phase 2 |
+| O-28 | **`radiate`'s band shift is non-uniform** on the D-073 ladders — the same buff is worth +50 units on one ability and +800 on another. Cap, percentage, or flat bonus? Leaning flat | Phase 2 |
+| O-29 | **`paralyze` has a `+` form's reach with no base form.** Intentional as the Chrono time-stop replacement, or does it want a base? Either way the Calibrator must not price it as a base form | Phase 2 |
+| O-30 | **Is `rime`'s recoil a basic attack?** If so it is evadable, and two rimed entities shooting each other need a recursion guard | Phase 2 |
+| O-31 | **Does `ward` block a gun-shot or a hit?** Piercing turns one gun-shot into five hits, so per-hit makes ward five times weaker than authored | Phase 2 |
+| O-32 | **`stasis` — who applies it, and to whom?** Reads as a boss mechanic on the player, but nothing in the ability set produces it yet | Phase 2 |
 | O-23 | ~~Homing plus velocity inheritance~~ — **dissolved by D-076.** Distance-denominated correction makes the path speed-invariant, so the interaction cannot occur | ✅ |
 | O-24 | **Every AoE ability is now worth 6–14× what the last revision assumed** (D-079). No authored damage number has been checked against the new counts | Phase 4 |
 | O-25 | **200 baddies at 75 units** is a rendering and collision claim, not a design one. Prove it on a real mid-range phone | M0 |
