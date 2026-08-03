@@ -301,7 +301,7 @@ sentinels like `-1`. The parameter always exists; its value may be unbounded.
 
 ### D-043 [N] Drones are non-collidable with everything
 Not cover for the player, not an obstacle for baddies. Same-faction projectiles pass
-through as if absent. `faction: MERCENARY | HORROR` (D-061). Types so far: `hologram`,
+through as if absent. `faction: MERCENARY | UNFORMED` (D-061). Types so far: `hologram`,
 `undead`.
 
 ### D-044 [R] Everything purchasable is a rank line
@@ -485,16 +485,22 @@ Three consequences:
 
 Rank count and degrees-per-rank are Phase 1b numbers.
 
-### D-061 [N] The factions are the Mercenaries and the Horror
-`faction: MERCENARY | HORROR`, replacing the placeholder `PLAYER | BADDIE`. Grounding the
+### D-061 [R] The factions are the Mercenaries and the Unformed
+`faction: MERCENARY | UNFORMED`, replacing the placeholder `PLAYER | BADDIE`. Grounding the
 enum in fiction rather than in role means a third faction later costs nothing.
 
-**"The Hollow" is deleted.** The Horror is eldritch-plus-technology: organic ones are
+**Renamed from `HORROR` to `UNFORMED`.** The gain is that it doubles as the in-fiction
+collective noun for every baddie, which `Baddie` never was — that stays a code and design
+word (D-036). The game can now say "the Unformed are massing in Sector 3" where it
+previously had nothing to say, and the name carries the theme: things that never resolved
+into a fixed shape.
+
+**"The Hollow" is deleted.** The Unformed is eldritch-plus-technology: organic ones are
 collision-focused and may die on impact or ignore it entirely; augmented ones shoot, spit,
 or beam. The proposed `chassis: organic | augmented` field drives fiction and behavior
 together.
 
-Debris sits in `HORROR` [OPEN] — fictionally odd for an asteroid, but faction only decides
+Debris sits in `UNFORMED` [OPEN] — fictionally odd for an asteroid, but faction only decides
 what can damage what, and a third `NEUTRAL` faction would earn its keep only if debris
 needs to hurt both sides.
 
@@ -706,6 +712,8 @@ The third form is the gravity well — pull inward until within the inner radius
 which is what most gravity abilities actually want.
 
 ### D-076 [N] Homing is a distance-denominated budget, bounded by `dis4`
+> **Numbers superseded by D-080** — the ceiling is 3.5° and the rate 1°/100u. The
+> distance-denomination principle below still holds and is the load-bearing part.
 ```
 homing       = total angular correction budget, 2° → 18°
 HOMING_RATE  = 6° per 100 units travelled
@@ -780,6 +788,81 @@ becomes the most load-bearing open question in the balance work.
 Also a performance claim: 200 baddies at 75 units needs proving on a real mid-range phone in
 M0.
 
+### D-080 [R] Homing capped at 100 units of lateral reach; targets the nearest baddie in line
+The ceiling is set by its observable effect rather than by an angle. **At most 100 units of
+sideways correction at maximum range**, and `atan(100 / 1600)` = 3.58°, so the cap is
+**3.5°** and buys 98 units.
+
+An 80% cut from the 18° carried the day before, and correct: 18° reached 520 units sideways
+at `dis4`, over half the screen width, from a badly aimed shot.
+
+```
+homing       = 1.0° base, 5 ranks × +0.5°, max 3.5°
+HOMING_RATE  = 1° per 100 units travelled
+HOMING_RANGE = dis4
+```
+
+**Below ~5°, degrees and lateral units are interchangeable** — `tan` is near-linear, so each
+half-degree is a flat ~14 units at max range. The line reads linearly either way, so
+tooltips quote units.
+
+`HOMING_RATE` drops from 6° to 1° per 100 units: at 6° the whole 3.5° budget would be spent
+within 58 units of the barrel, reading as a snap rather than a curve. At 1° it takes 350
+units.
+
+**Homing acquires the nearest valid baddie along the line of fire and ignores everything
+behind it.** No re-evaluation for a better target. This is what stops homing and piercing
+from fighting — homing decides where the shot goes, piercing decides how far it continues.
+
+### D-081 [N] New rank line: `piercing`, 0 → 4
+A gun-shot passes through `piercing` baddies and continues, landing `piercing + 1` hits.
+Zero at base.
+
+**This is the structural answer to the gap D-079 exposed, and it works because it scales
+with the same variable AoE does.** A flat damage buff would have helped single-target shots
+everywhere, including against bosses where they were never weak. Piercing pays out only in
+crowds — exactly where the gap opened.
+
+Modelled as mean free path: a projectile sweeps a corridor `PROJECTILE_WIDTH +
+BADDIE_WINGSPAN` = 83 units wide, so `gap = field_area / (count × 83 × clustering)`.
+
+| Situation | Count | Mean gap | Hits at P=4 | Multiplier |
+|---|---|---|---|---|
+| Swarm | 200 | 67 | 5.0 | 5.0× |
+| Standard wave | 85 | 158 | 5.0 | 5.0× |
+| Tank wave | 20 | 672 | 2.4 | 2.4× |
+| Boss, alone | 1 | — | 1.0 | 1.0× |
+
+Full value in crowds, partial against tanks, **nothing against a lone boss** — where
+single-target was already competitive, since an AoE hitting one target is just a worse
+single-target hit.
+
+Incidental finding worth keeping: **at 85 baddies a gun-shot currently dies 158 units out of
+the barrel**, under a tenth of its range. That is most of why single-target felt weak.
+
+No damage falloff per pierce — flat is simpler, consistent with D-014, and rank cost is a
+cleaner lever than a decay curve nobody can feel. Piercing is a **basic-attack stat**;
+abilities declare their own in data, and authored abilities granting piercing get reworked
+against this line rather than stacking with it.
+
+### D-082 [N] Crit rolls once per gun-shot, not once per pierced hit
+Forced by D-081. Per hit, a maxed loadout reaches 15 shots/sec × 5 hits × 4% = **3.0
+crits/sec**, five times the 0.6/sec locked in D-070. Rolling once per gun-shot preserves the
+cadence exactly and reads better: the whole pierced line crits at once.
+
+Attunement on-crit effects proc once per gun-shot for the same reason. **On-hit effects
+still apply per hit** — spreading burn down a line of five is the point.
+
+**`guns` × `piercing` × `attack_speed` is one compound axis, not three lines.** Three guns
+each piercing four is fifteen hits per gun-shot; compounded with fire rate the offense
+multiplier from base to maxed reaches roughly 75×, steeper than anything else in the tree.
+This is the D-029 increasing-returns pattern and the Calibrator must treat it as a single
+dimension.
+
+**Piercing must be priced against the crowd case**, since at four ranks it is a 5× multiplier
+for most of the game. Priced cheap, single-target guns become the answer to every encounter
+and the AoE abilities are weak again — the same problem inverted.
+
 ### D-071 [N] The Expanse is 6000 × 6000
 Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
 cross at base speed.
@@ -798,12 +881,14 @@ cross at base speed.
 | O-11 | **Screen names.** Proposed: Star Chart (sector select, which also frees `map`), Drydock (upgrades and loadout), Requisitions (purchases), Briefing, Settlement (payout), Expanse (open arena type). Also needed: Settings, Bestiary, Pause, Attributions | Phase 7 |
 | O-12 | **Dogfighting boss.** Achievable — utility-scored behavior tree, ~8 candidate actions, 1–2 weeks mostly tuning. Must use the gameplay RNG and fixed timestep or determinism breaks. Conflicts with `03` §3.7 (every boss attack telegraphed ≥0.6s). Proposed resolution: **positioning** is reactive and untelegraphed, **attacks** stay telegraphed — it out-flies you rather than out-drawing you. Scope to exactly one boss. Reading `defense_affinity` as a counter to the player's attunement is cheap | Post-M0, content |
 | O-13 | Which element owns `invisible` — Bryan leans GAMMA, since ETHER already carries several | Phase 1d |
-| O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `HORROR` and the fiction oddity costs nothing | Phase 2 |
+| O-15 | **Does debris need a `NEUTRAL` faction?** Only if it should damage both sides. Otherwise it stays `UNFORMED` and the fiction oddity costs nothing | Phase 2 |
 | O-17 | **Expanse at 6000².** Six seconds to cross at base speed. A torus too large stops reading as a torus and becomes an empty box | M0 |
 | O-18 | **`HOMING_BASE` — 0° or 2°?** The 2° baseline mirrors the free crit: rate-based rotation plus screen-relative movement means a new player fights two axes at once. Thirty seconds on a phone answers it | M0 |
 | O-20 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it sets both the Expanse size and the projectile ratio. The most load-bearing feel number in the game | M0 |
 | O-21 | ~~`CLUSTERING = 2.0`~~ — **resolved by D-078** against a measured screenshot | ✅ |
-| O-22 | **Is the 18° homing ceiling too steep?** It reaches 520 units sideways at `dis4`, over half the screen. 12° looks more defensible | M0 |
+| O-22 | ~~Is the 18° homing ceiling too steep?~~ — **resolved by D-080** at 3.5°, capped on lateral reach | ✅ |
+| O-26 | **Pricing `piercing`.** At 4 ranks it is a 5× damage multiplier in crowds. Too cheap and single-target guns answer every encounter; too dear and the AoE gap stays open | Phase 4 |
+| O-27 | **Abilities that grant piercing need reworking** against the new rank line rather than stacking with it | Phase 2 |
 | O-23 | ~~Homing plus velocity inheritance~~ — **dissolved by D-076.** Distance-denominated correction makes the path speed-invariant, so the interaction cannot occur | ✅ |
 | O-24 | **Every AoE ability is now worth 6–14× what the last revision assumed** (D-079). No authored damage number has been checked against the new counts | Phase 4 |
 | O-25 | **200 baddies at 75 units** is a rendering and collision claim, not a design one. Prove it on a real mid-range phone | M0 |

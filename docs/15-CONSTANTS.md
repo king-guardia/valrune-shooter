@@ -1,6 +1,6 @@
 # 15 — Constants
 
-**Status: draft, revision 3 — geometry rescaled against a measured reference.** Vocabulary is fixed by
+**Status: draft, revision 4 — homing recapped, `piercing` added.** Vocabulary is fixed by
 [`14-CANON.md`](14-CANON.md); this file puts numbers on it.
 
 Every value is one of three kinds:
@@ -357,7 +357,7 @@ which is exactly what happens if homing is denominated **per unit travelled rath
 second**:
 
 ```
-HOMING_RATE = 6° per 100 units travelled    Starting point
+HOMING_RATE = 1° per 100 units travelled    Starting point — see §10
 ```
 
 **Speed then cancels out of the path entirely.** A 2800 u/s and a 3600 u/s projectile trace
@@ -414,7 +414,8 @@ Three consequences worth holding onto:
 | `crit_chance` | 1.0% | 12 × +0.25% | 4.0% | See below |
 | `crit_damage` | 1.25× | 25 × +0.05 | 2.50× | Unchanged |
 | `attack_speed` | 3.0/s | 24 × +0.5 | 15.0/s | Per D-012 |
-| `homing` | 2° | 8 × +2° | 18° | Ceiling likely too steep, see below |
+| `homing` | 1.0° | 5 × +0.5° | 3.5° | 98 units lateral at max range, see below |
+| `piercing` | 0 | 4 × +1 | 4 | **New line**, see below |
 | `bulwark_flat` | 0 | 16 × +1 | 16 | See below |
 | `thrusters` | 1000 u/s | 20 × +40 | 1800 u/s | |
 | `gyros` | 420 °/s | 20 × +15 | 720 °/s | |
@@ -454,44 +455,124 @@ approaches zero and the shot counter runs into the hundreds between crits.
 ### `homing` (D-060)
 
 ```
-homing      = total angular correction budget, 2° → 18°
-HOMING_RATE = 6° per 100 units travelled
+homing       = total angular correction budget, 1.0° → 3.5°
+HOMING_RATE  = 1° per 100 units travelled
 HOMING_RANGE = dis4 (1600)    Beyond this, no correction at all
 ```
 
+**The ceiling is set by lateral reach, not by the angle.** You want at most 100 units of
+sideways correction at maximum range, and `atan(100 / 1600)` is 3.58°, so **3.5° is the
+cap** and it buys 98 units.
+
+That is an 80% cut from the 18° this file carried yesterday, and it is the right call — 18°
+reached 520 units sideways, over half the screen width, from a shot you aimed badly.
+
+| Rank | Degrees | Lateral reach at `dis4` |
+|---|---|---|
+| Base | 1.0° | 28 |
+| 1 | 1.5° | 42 |
+| 2 | 2.0° | 56 |
+| 3 | 2.5° | 70 |
+| 4 | 3.0° | 84 |
+| **5 (max)** | **3.5°** | **98** |
+
+**Degrees and units are interchangeable at this scale.** Below about 5°, `tan` is close
+enough to linear that each half-degree is a flat ~14 units of reach at max range. The rank
+line reads linearly to the player whichever unit the tooltip uses, so the tooltip should say
+units — nobody has intuition for 2.5 degrees.
+
+Against a 75-unit baddie, base homing widens the hit window from ±37.5 to ±65 and maxed
+homing takes it to ±135. Roughly triple, without ever feeling like the game is aiming.
+
+**`HOMING_RATE` drops to 1°/100u** to match. At the old 6° the entire 3.5° budget would be
+spent within 58 units of leaving the barrel — a visible snap rather than a curve. At 1° the
+budget takes 350 units to spend, which reads as a gentle arc.
+
 **Homing is a budget, not a rate.** The rate governs how fast it is spent; the rank line
-governs how much there is. The budget only becomes reachable past ~300 units of travel,
-and that is correct rather than a limitation — **close range is already forgiving in
-absolute terms.** A standard baddie is 75 units across, so it subtends 20.6° at 100 units
-but only 1.34° at `dis4`. Homing matters exactly where the geometry gets cruel, and there
-is plenty of flight distance there to spend the budget.
+governs how much there is. The budget only becomes reachable past 350 units of travel, and
+that is correct rather than a limitation — **close range is already forgiving in absolute
+terms.** A standard baddie subtends 20.6° at 100 units but only 1.34° at `dis4`. Homing
+matters exactly where the geometry gets cruel, and there is plenty of flight distance there
+to spend the budget.
 
 **Nothing homes beyond `dis4`** (D-076). A shot fired across the Expanse at something 3000
 units away flies straight.
 
-### The 18° ceiling — now with a number attached
+**Homing acquires the nearest valid baddie along the line of fire and ignores everything
+behind it** (D-080). No re-evaluation for a better target, no reaching past the first thing
+in the way. This is what keeps homing and piercing from fighting: homing decides where the
+shot goes, piercing decides how far it keeps going after it gets there.
 
-Lateral coverage at maximum range is the honest way to read this: **at `dis4`, 18° of
-correction reaches 520 units sideways.** That is over half the screen width, from a shot
-you aimed badly.
-
-| Homing | Lateral reach at `dis4` | Versus a 75-unit baddie |
-|---|---|---|
-| 2° (base) | 56 | Roughly doubles the hit window |
-| 8° | 225 | Generous |
-| 12° | 340 | A third of the screen |
-| **18° (max)** | **520** | **Over half the screen** |
-
-Your instinct that this is too steep looks right, and 12° is the more defensible ceiling.
-**Left at 18° anyway so M0 tests the generous end** — it is easier to feel "this is too
-much" and dial back than to guess the line from a desk. Dropping to 6 ranks caps at 14°,
-5 ranks at 12°.
-
-**The 2° free baseline mirrors the free crit**, for a different reason with the same shape:
-rate-based rotation plus screen-relative movement means a new player is fighting two axes
-at once, and zero correction would make the opening hour feel broken rather than hard.
-**M0 should test 0° against 2°** — obvious in thirty seconds on a phone, unknowable at a
+**The 1.0° free baseline mirrors the free crit**, for a different reason with the same
+shape: rate-based rotation plus screen-relative movement means a new player is fighting two
+axes at once, and zero correction would make the opening hour feel broken rather than hard.
+**M0 should test 0° against 1.0°** — obvious in thirty seconds on a phone, unknowable at a
 desk.
+
+### `piercing` — the structural answer to the AoE gap (D-081)
+
+```
+piercing = 0 base, 4 ranks × +1, max 4
+```
+
+A gun-shot passes through `piercing` baddies and continues, so it lands `piercing + 1` hits.
+Zero at base: shots stop on first contact, as they do today.
+
+**This is the right fix for the problem D-079 exposed, and it works because it scales with
+the same variable AoE does.** Flat damage buffs would have helped single-target shots
+everywhere including against bosses, where they were never weak. Piercing pays out only when
+there is a crowd — which is exactly where the gap opened.
+
+The reach of a gun-shot through a crowd is a mean-free-path problem. A projectile sweeps a
+corridor `PROJECTILE_WIDTH + BADDIE_WINGSPAN` = 83 units wide, so the average gap between
+baddies along the line of fire is:
+
+```
+gap = field_area / (count × 83 × clustering)
+```
+
+| Situation | Count | Mean gap | Hits at P=0 | P=2 | **P=4** | Multiplier |
+|---|---|---|---|---|---|---|
+| Swarm | 200 | 67 | 1.0 | 3.0 | **5.0** | **5.0×** |
+| Standard wave | 85 | 158 | 1.0 | 3.0 | **5.0** | **5.0×** |
+| Tank wave | 20 | 672 | 1.0 | 2.0 | **2.4** | **2.4×** |
+| Boss, alone | 1 | — | 1.0 | 1.0 | **1.0** | **1.0×** |
+
+**The shape is exactly right.** Full value in crowds, partial against a handful of tanks,
+nothing at all against a lone boss — where single-target output was already competitive,
+since an AoE hitting one target is just a worse single-target hit.
+
+Note the incidental finding in that table: **at 85 baddies your shots currently die 158
+units out of the barrel.** A gun-shot at `piercing: 0` in a standard wave never travels a
+tenth of its range. That is most of why single-target felt weak.
+
+### Three things piercing collides with
+
+**1. Crit must roll once per gun-shot, not once per hit.** Per hit, a maxed loadout gets
+15 shots/sec × 5 hits × 4% = **3.0 crits/sec**, blowing straight through the 0.6/sec we
+just set in D-070. Rolling per gun-shot preserves the cadence exactly, and it makes crits
+read better anyway: the whole line lights up at once. Attunement on-crit effects proc once
+per gun-shot for the same reason.
+
+**On-hit effects still apply per hit.** Spreading burn down a line of five is the point.
+
+**2. `guns` and `piercing` multiply, and that is the D-029 pattern.** Three guns each
+piercing four is fifteen hits per gun-shot. Stacked with attack speed, the offense
+multiplier from base to maxed reaches roughly 75×, which is a steeper curve than anything
+else in the tree. **The Balance Calibrator has to treat guns × piercing × attack_speed as
+one compound axis**, not three independent lines.
+
+**3. Piercing must be priced against the crowd case.** At four ranks it is a 5× damage
+multiplier for most of the game. If it is cheap, single-target guns become the correct
+answer to every encounter and the AoE abilities go back to being worse — the same problem
+inverted.
+
+**No damage falloff per pierce.** Flat is simpler, consistent with D-014, and the rank cost
+is a cleaner lever than a decay curve nobody can feel.
+
+Piercing is a **basic-attack stat**. Abilities declare their own piercing in data, and the
+ones you wrote that grant piercing get reworked against this line rather than stacking with
+it.
 
 ### Homing means something different per delivery (D-077)
 
@@ -567,9 +648,10 @@ Tooltips say **"short / medium / long" plus the unit count**; data says `r2`.
 |---|---|---|
 | 1 | **Every AoE ability is now worth 6–14× what the last revision assumed**, because baddie counts tripled. None of the authored damage numbers have been checked against this | Phase 4 |
 | 2 | **Expanse at 6000²** — 6s to cross at base speed. A torus too large stops reading as a torus | M0 |
-| 3 | **`HOMING_BASE`** — 0° or 2°? And 18° reaches 520 units sideways at max range, which looks too steep | M0 |
+| 3 | **`HOMING_BASE`** — 0° or 1.0°? The ceiling is settled at 3.5°; only the free baseline is open | M0 |
 | 4 | **`VALRUNE_SPEED_BASE = 1000`** is 2.3× v0's. Fast for a thumb-driven ship, and it drives the Expanse size and the projectile floor | M0 |
 | 5 | **200 baddies at 75 units each** is a rendering and collision load worth proving early on a real mid-range phone | M0 |
+| 6 | **Pricing `piercing`** — a 5× crowd multiplier at 4 ranks, and `guns × piercing × attack_speed` compounds to roughly 75× | Phase 4 |
 
 O-21 is resolved: `CLUSTERING_BLIND = 1.85`, `CLUSTERING_AIMED = 2.50`, with decay by
 coverage. Still a Balance Lab slider, but it is now anchored to a measurement instead of a

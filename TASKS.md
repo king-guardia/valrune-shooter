@@ -41,6 +41,8 @@ The gate is open. Phase 2 can proceed on vocabulary.
       deleted in favour of composed pairs, velocity inheritance cut, homing denominated per
       unit travelled and bounded by `dis4` (D-073 to D-079)
 - [x] Resolved O-21 (clustering, split blind/aimed and measured) and O-23 (dissolved)
+- [x] **Revision 4:** faction `HORROR` → `UNFORMED`, homing capped on lateral reach at 3.5°,
+      new `piercing` rank line closing the AoE gap (D-080 to D-082). Resolved O-22
 
 Everything still open is an **M0 measurement, not a desk decision** — Expanse size,
 `HOMING_BASE` and ceiling, `VALRUNE_SPEED_BASE`, and the 200-baddie performance claim.

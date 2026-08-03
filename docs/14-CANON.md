@@ -119,8 +119,13 @@ field object is a flame trail.
 
 Replaces v0's `spread` rank line. **Each rank grants N degrees of correction**: a
 projectile may curve up to that many degrees off its launch heading to intersect a baddie.
-At 15 degrees you no longer have to be dead-on, which matters a great deal given that you
-are rotating and strafing at the same time.
+Even a small budget matters a great deal given that you are rotating and strafing at the
+same time.
+
+**The ceiling is set by lateral reach, not by the angle** (D-080): at most 100 units of
+sideways correction at maximum range, which is `atan(100/1600)` = 3.5°. Small in degrees,
+substantial in practice — it roughly triples the hit window against a 75-unit baddie at
+long range. Tooltips should quote units, since nobody has intuition for 2.5 degrees.
 
 Better than spread, and for a reason worth stating: spread made your shots *less*
 accurate as it grew, so it was a stat you bought to change your playstyle rather than to
@@ -138,6 +143,9 @@ Three things this touches:
   a **beam angles its emitter** so it stays a straight line from bow to target; a **wave
   rotates its center axis** onto the target and spreads from there. Beams never bend.
 - **Nothing homes beyond `dis4`** (D-076).
+- **Homing takes the nearest valid baddie along the line and ignores everything behind it**
+  (D-080). This is what keeps it from fighting `piercing`: homing decides where the shot
+  goes, piercing decides how far it keeps going after it arrives.
 - **Spread also drove the visuals** — helix amplitude at 2 guns, fan angle at 3 (v0 `04`
   §4.4.4). Those now need fixed values, which is fine and arguably better: the helix reads
   as a signature rather than a setting.
@@ -178,7 +186,7 @@ that became AoE — is not evadable. Contact damage is never evadable.
 | **Field object** | A persistent thing occupying space: mine, flame trail, fissure, zone, portal, wire net. | `FieldObject` |
 | **Trail** | A field object emitted continuously from the Valrune's stern as it moves. | `TrailEmitter` |
 | **Lifetime** | How long a spawned object exists. | `lifetime` |
-| **Faction** | `MERCENARY` or `HORROR`. Determines what can hurt what. | `faction` |
+| **Faction** | `MERCENARY` or `UNFORMED`. Determines what can hurt what. | `faction` |
 
 **On your lifetime/cooldown question — yes, exactly that.** The parameter always exists;
 its value may be unbounded. `lifetime: null` means "until the contract ends",
@@ -242,22 +250,25 @@ do not. That is a consumer of the data, not a difference in the data.
 
 **Rank is a purchased step. Tier is a node's I/II/III.** Never the same word.
 
-### The thirteen credit rank lines
+### The fourteen credit rank lines
 
 | Group | Lines |
 |---|---|
-| **Offense** | `damage`, `attack_speed`, `guns`, `crit_chance`, `crit_damage`, `velocity`, `homing` |
+| **Offense** | `damage`, `attack_speed`, `guns`, `crit_chance`, `crit_damage`, `velocity`, `homing`, `piercing` |
 | **Defense** | `hull`, `shield`, `shield_recharge`, `bulwark_flat` |
 | **Mobility** | `thrusters`, `gyros` |
 
 Ids are `snake_case`; display names live in `locale/`. Not SCREAMING_CASE — that is
 reserved for enum values, and these are data rows.
 
-**Thirteen, not v0's fourteen.** `bulwark_percent` is deleted (D-058): percentage
-mitigation multiplies with evasion, rime, and shields, which is the increasing-returns
-problem D-029 warns about. **Mitigation is flat only.** The percentage allowlist is now
-genuinely closed at crit chance, crit damage, and Overclock — all three legitimately
-probabilistic or multiplicative by nature.
+**`bulwark_percent` is deleted** (D-058): percentage mitigation multiplies with evasion,
+rime, and shields, which is the increasing-returns problem D-029 warns about. **Mitigation
+is flat only.** The percentage allowlist is genuinely closed at crit chance, crit damage,
+and Overclock — all three legitimately probabilistic or multiplicative by nature.
+
+**`piercing` is added** (D-081): a gun-shot passes through N baddies and keeps going. It
+exists to close the single-target-versus-AoE gap, and it works because it pays out only
+where the gap is — in crowds, not against a lone boss.
 
 ### Nodes and abilities
 
@@ -614,8 +625,13 @@ Two left. Everything else is settled.
 
 ### 1. Screen names
 
-The factions are settled: **the Mercenaries** and **the Horror**, `MERCENARY` and
-`HORROR` in code.
+The factions are settled: **the Mercenaries** and **the Unformed**, `MERCENARY` and
+`UNFORMED` in code.
+
+**"The Unformed" is also the in-fiction collective noun for every baddie**, which `Baddie`
+never was — that stays a code and design word (D-036). So the game can say "the Unformed
+are massing in Sector 3" where it previously had nothing to say, and the name carries the
+eldritch theme: things that never resolved into a fixed shape.
 
 Eldritch-plus-technology also gives a clean structural axis worth putting in the data:
 `chassis: organic | augmented`. Organic ones are collision-focused and may die on impact
