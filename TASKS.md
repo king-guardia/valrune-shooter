@@ -57,7 +57,10 @@ Everything still open is an **M0 measurement, not a desk decision** — Expanse 
 - [x] Audited all 17 debuffs against D-016 — 15 matched, so the 51 immune booleans become
       **generated** from tag plus form rather than authored
 - [x] 10 decisions recorded (D-083 to D-092)
-- [ ] **Bryan reviews — 11 conflicts found, 5 open questions**
+- [x] **Revision 2** — duration policy (riders fixed, payloads from source), stack-ramp model
+      for the Balance Lab, lockout family collapsed. `stasis` deleted, `paralyze_plus` added
+      (D-093 to D-098). Resolved O-29, O-31, O-32
+- [ ] **Bryan reviews conflicts §7.1–7.11 and the 5 remaining open questions**
       The two that are bugs rather than inconsistencies: base `override` is a no-op, and the
       `Shield` status collides with the `shield` rank line
 

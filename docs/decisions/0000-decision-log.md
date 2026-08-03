@@ -987,6 +987,126 @@ form**, not data.
 Phase 2 generates them. That removes 51 hand-maintained booleans and, more usefully, makes it
 structurally impossible to author a boss that is accidentally stunnable.
 
+### D-093 [N] Rider statuses have fixed durations; payload statuses take them from the source
+Most games put duration on the source — WoW, MOBAs, tower defense all do. **But in all of them
+each source applies its own private debuff**, so durations can differ freely. Valrune has *one*
+`burn` applied by fifteen abilities, which is the case where source-defined durations break:
+
+- **The refresh rule becomes incoherent.** Reapplication never shortens (canon §8), so
+  reapplying a 3s burn over an 8s burn takes the max — the longest source wins permanently and
+  every other ability's duration silently stops mattering.
+- Fifteen numbers to balance instead of one.
+- Nothing is learnable. "Burn is five seconds" is a fact a player can hold.
+
+The discriminator is **payload versus rider**:
+
+| | Duration | Examples |
+|---|---|---|
+| **Rider** — the ability does something else and the status tags along | Fixed on the status | burn, shock, corrosion, poison, slow, stagger, radiate |
+| **Payload** — the status *is* the ability | `from_source` | ethereal, evasion, rime, gravity, ward, invisible, damage_immune, untargetable |
+
+"Ethereal for 2s" and "ethereal for 5s" are two abilities at two prices and the duration is the
+whole difference. "Deals 40 plasma and applies burn" is a rider, and the burn should be the same
+burn every time or the phrase means nothing.
+
+Abilities wanting a longer rider declare `duration_scale: 1.0 | 1.5 | 2.0` — banded so the
+Calibrator can compare, and constrained to values that stay on the `TICK_FAST` grid. The `+`
+form remains the preferred home for longer durations.
+
+14 fixed, 19 from source, 2 endless.
+
+### D-094 [N] The Balance Lab models stack ramp against target lifetime
+Full stacks is a fine approximation against durable targets and badly wrong against chaff, and
+the exact formula is two lines:
+
+```
+ramp = C / R
+if ramp >= T:   average = R × T / 2
+else:           average = C − C² / (2 R T)
+```
+
+**`T` is target lifetime, not the 120s window.** At 5 stacks and 3 applications/sec: 4.99
+against a 60s boss, 4.90 against an 8s elite, 3.75 against a 2s minion, and **0.50** against
+that minion from a 0.5/sec source — a tenfold overstatement if full stacks were assumed.
+
+**This exposes a conflict between stacking and D-016** (O-33). Stacking needs long-lived
+targets; the ladder locks base forms to minions and debris, which die before stacks accumulate.
+So base `corrosion` and base `poison` are near-worthless stubs while all value sits in their `+`
+forms. Recommended fix is exempting stacking debuffs from the base restriction so they reach
+**elites**, with `+` forms still gating bosses and minibosses — D-016 exists to keep boss fights
+authorable, and corrosion stacking on an elite does not threaten that.
+
+### D-095 [R] `stasis` deleted; `paralyze` gains a `+` form; `gravity_plus` stops denying actions
+`paralyze`, `stasis`, and `gravity_plus` were three statuses competing to be one mechanic,
+escalating by accretion: `gravity_plus` was `paralyze` with a pull bolted on, `stasis` was
+`paralyze` with two extra clauses.
+
+```
+paralyze       cannot move or act. Minions.
+paralyze_plus  also cannot rotate; passives and status durations pause. Elites.
+```
+
+`stasis` is deleted, its two distinctive clauses becoming what makes `paralyze_plus` a `+` form.
+Resolves the polarity error (D-088), O-29 (paralyze had a `+` form's reach with no base), and
+O-32 (nothing applied stasis).
+
+**`gravity_plus` escalates by strength of pull, not by borrowed lockout.** That leaves gravity as
+trajectory control rather than paralysis — being dragged somewhere while still able to shoot is a
+more interesting problem than being switched off.
+
+### D-096 [N] VOID gravity fields bend projectiles
+Nothing else in the game manipulates projectiles in flight, and it gives VOID an identity no
+other element can copy: bend incoming fire away defensively, curve your own shots into a cluster
+offensively. **It interacts with `homing` without duplicating it** — homing corrects toward a
+target, gravity displaces regardless of intent, and the two forces sum cleanly.
+
+**It belongs to the field object, not the status.** The `gravity` status is "this entity is being
+pulled"; projectile bending is a property of the field doing the pulling.
+
+Cheap and deterministic — projectiles already carry position and velocity. The real limit is how
+many gravity fields exist at once, which is wave authoring rather than engine work. Logged as
+O-34 since this is new scope rather than a correction.
+
+### D-097 [R] The defensive statuses are four flags, not five statuses
+`ethereal`, `damage_immune`, `untargetable`, and `invisible` overlapped because each was defined
+whole rather than composed. They separate on four axes — `targetable`, `collidable`, `damageable`,
+`visible` — and each occupies a genuinely distinct cell, so none needs deleting.
+
+**The distinction that saves `damage_immune`: ethereal *misses*, damage immunity *lands for
+zero*.** A miss applies no riders; a zero-damage hit still applies everything else. That is the
+boss phase worth having — *you cannot hurt it yet, but you can stack corrosion for when the
+shield drops.*
+
+So **`damage_immune` stops blocking debuffs.** Dropping that clause is what makes it distinct
+from `ethereal_plus` rather than a duplicate, and it simplifies D-091 to `damageable: false` with
+no ImmunitySet manipulation.
+
+**`untargetable` is the anti-homing status.** Now that `homing` is a rank line every player buys,
+an untargetable baddie is real counterplay and a natural GAMMA signature. **`invisible` grants
+`untargetable`** rather than restating the targeting rules — so invisibility breaks homing, and
+breaks *yours* without any baddie needing homing of its own.
+
+### D-098 [R] `ward` charges get a 1.0s internal cooldown
+A charge blocks a hit regardless of size, so its value is set by the largest thing it can be
+spent on — 9 damage against chaff, 600 against a boss special. **And piercing makes it worse**:
+D-081 turns one gun-shot into five hits, so ward evaporates in a swarm. Simultaneously useless
+where you are chipped to death and dominant where you are hit once every five seconds.
+
+```
+ward: N charges. Consuming one puts ward on a 1.0s internal cooldown.
+```
+
+One number fixes both ends. In a swarm it blocks one hit per second instead of vanishing;
+against a boss it still absorbs the big telegraphed hits, which is the job no other defensive
+status can do — evasion cannot touch specials (D-017) and ethereal+ only helps if timed.
+
+**Resolves O-31**: a five-hit pierced gun-shot consumes one charge, because the cooldown starts
+at the first hit.
+
+An HP-pool ward was rejected as duplicating the `shield` rank line, and basic-attack scoping as
+a third answer to a question `evasion` and `ethereal` already answer twice. Ward-stripping stays
+available as an elite mechanic but is deferred — additional scope, not a fix.
+
 ### D-071 [N] The Expanse is 6000 × 6000
 Square, wrapping both axes. Six screen-widths across, ~2.7 screen-heights. Six seconds to
 cross at base speed.
@@ -1014,10 +1134,12 @@ cross at base speed.
 | O-26 | **Pricing `piercing`.** At 4 ranks it is a 5× damage multiplier in crowds. Too cheap and single-target guns answer every encounter; too dear and the AoE gap stays open | Phase 4 |
 | O-27 | **Abilities that grant piercing need reworking** against the new rank line rather than stacking with it | Phase 2 |
 | O-28 | **`radiate`'s band shift is non-uniform** on the D-073 ladders — the same buff is worth +50 units on one ability and +800 on another. Cap, percentage, or flat bonus? Leaning flat | Phase 2 |
-| O-29 | **`paralyze` has a `+` form's reach with no base form.** Intentional as the Chrono time-stop replacement, or does it want a base? Either way the Calibrator must not price it as a base form | Phase 2 |
+| O-29 | ~~`paralyze` has a `+` form's reach with no base form~~ — **resolved by D-095.** It has both now | ✅ |
 | O-30 | **Is `rime`'s recoil a basic attack?** If so it is evadable, and two rimed entities shooting each other need a recursion guard | Phase 2 |
-| O-31 | **Does `ward` block a gun-shot or a hit?** Piercing turns one gun-shot into five hits, so per-hit makes ward five times weaker than authored | Phase 2 |
-| O-32 | **`stasis` — who applies it, and to whom?** Reads as a boss mechanic on the player, but nothing in the ability set produces it yet | Phase 2 |
+| O-31 | ~~Does `ward` block a gun-shot or a hit?~~ — **resolved by D-098.** The internal cooldown makes it one charge per gun-shot | ✅ |
+| O-32 | ~~`stasis` — who applies it, and to whom?~~ — **dissolved by D-095.** Deleted | ✅ |
+| O-33 | **Stacking versus the threat ladder.** Base `corrosion` and `poison` can only land on targets that die before stacks accumulate, making them stubs. Let base stacking debuffs reach elites? | Phase 2 |
+| O-34 | **Gravity bending projectiles** (D-096) is new scope rather than a correction — worth confirming before it enters the schema | Phase 2 |
 | O-23 | ~~Homing plus velocity inheritance~~ — **dissolved by D-076.** Distance-denominated correction makes the path speed-invariant, so the interaction cannot occur | ✅ |
 | O-24 | **Every AoE ability is now worth 6–14× what the last revision assumed** (D-079). No authored damage number has been checked against the new counts | Phase 4 |
 | O-25 | **200 baddies at 75 units** is a rendering and collision claim, not a design one. Prove it on a real mid-range phone | M0 |

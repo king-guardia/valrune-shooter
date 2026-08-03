@@ -1,14 +1,17 @@
 # 16 — Status Effects
 
-**Status: draft, revision 1 — awaiting Bryan's review.** Vocabulary is fixed by
-[`14-CANON.md`](14-CANON.md) §8; numbers by [`15-CONSTANTS.md`](15-CONSTANTS.md).
+**Status: draft, revision 2 — duration policy set, lockout family collapsed.** Vocabulary is
+fixed by [`14-CANON.md`](14-CANON.md) §8; numbers by [`15-CONSTANTS.md`](15-CONSTANTS.md).
 
-This catalogs all 35 statuses in `data/source/buffs_debuffs.csv`, settles the tag taxonomy
-(O-02) and `invisible`'s owner (O-13), and specifies how immunity and override resolve.
+This catalogs the statuses in `data/source/buffs_debuffs.csv`, settles the tag taxonomy (O-02)
+and `invisible`'s owner (O-13), and specifies how immunity and override resolve.
 
-**It also found eleven conflicts.** Two are outright bugs — one status that does nothing and
-one name collision that would produce wrong behavior rather than a compile error. Those are
-in §7, which is the part worth reading closely.
+**It also found eleven conflicts**, in §7. Two are outright bugs — one status that does nothing
+and one name collision that produces wrong behavior rather than a compile error.
+
+Revision 2 adds the duration policy (§4), the stacking model the Balance Lab needs (§3), and a
+rework of the six statuses whose jobs overlapped. **The net is one status deleted and one
+added**: `stasis` folds into a new `paralyze_plus`, leaving 35.
 
 ---
 
@@ -42,15 +45,16 @@ immune columns. `minion` also covers debris.
 | `burn` | burn | PLASMA | debuff | `dot` | 5s | — | minion |
 | `burn_plus` | burn | PLASMA | debuff | `dot` | 5s | — | boss |
 | `gravity` | gravity | VOID | debuff | `control` | source | — | minion |
-| `gravity_plus` | gravity | VOID | debuff | `control` | source | — | elite |
+| `gravity_plus` | gravity | VOID | debuff | `control` | source | — | elite ⚠ |
 | `shock` | shock | VOLT | debuff | `reactive` | 5s | — | minion |
 | `shock_plus` | shock | VOLT | debuff | `reactive` | 5s | — | boss |
 | `maxhp_loss` | maxhp_loss | — | debuff | `vulnerability` | source | 5 | boss ⚠ |
 | `maxhp_loss_plus` | maxhp_loss | — | debuff | `vulnerability` | source | 5 | boss |
 | `maxhp_gain` | maxhp_gain | — | buff | — | source | — | any |
 | `maxhp_gain_plus` | maxhp_gain | — | buff | — | source | — | any |
-| `paralyze` | paralyze | — | debuff | `control` | source | — | elite ⚠ |
-| `stasis` | stasis | — | **debuff** ⚠ | `control` | source | — | any ⚠ |
+| `paralyze` | paralyze | — | debuff | `control` | source | — | minion ⚠ |
+| `paralyze_plus` | paralyze | — | debuff | `control` | source | — | elite ⚠ |
+| ~~`stasis`~~ | — | — | — | — | — | — | **deleted** ⚠ |
 | `override` | override | — | buff | — | endless | — | any |
 | `override_plus` | override | — | buff | — | endless | — | any |
 | `damage_immune` | damage_immune | — | buff | — | source | — | any |
@@ -144,24 +148,127 @@ everybody would discover.
 **Each stack keeps its own magnitude**, so the mixed case above deals 3n + 2y rather than
 averaging. A new stack resets the timer for **all** stacks in the family (canon §8).
 
+### Modelling stacks in the Balance Lab
+
+**Assuming full stacks is close enough for some cases and badly wrong for others**, and the
+exact formula is two lines, so there is no reason to approximate.
+
+Given cap `C`, application rate `R` per second, and an exposure time `T`:
+
+```
+ramp = C / R
+if ramp >= T:   average_stacks = R × T / 2        never reaches cap
+else:           average_stacks = C − C² / (2 R T) caps, then holds
+```
+
+**`T` is target lifetime, not the 120-second window** — and that is the whole point. Run it
+against a 5-stack status:
+
+| Target | Lifetime | Applications/sec | Average stacks |
+|---|---|---|---|
+| Boss | 60s | 3.0 | **4.99** |
+| Elite | 8s | 3.0 | **4.90** |
+| Minion | 2s | 3.0 | **3.75** |
+| Minion | 2s | 0.5 | **0.50** |
+
+Against anything durable, full stacks is right. Against a minion hit by a slow ability, it
+overstates value by ten times.
+
+### This exposes a real conflict between stacking and the threat ladder
+
+Follow the table above to its conclusion. **Stacking statuses need long-lived targets to be
+worth anything.** But D-016 locks base-form debuffs to minions and debris, which are precisely
+the targets that die before stacks accumulate.
+
+So as currently authored, **base `corrosion` and base `poison` are close to worthless.** They
+can only be applied to things that die in about two seconds, and their entire mechanic is
+accumulation over time. All the value sits in `corrosion_plus` and `poison_plus`, which reach
+bosses. The base forms are stubs.
+
+Three ways out:
+
+- **Exempt stacking debuffs from the ladder's base restriction**, letting base forms reach
+  **elites** — long enough for three or four stacks — while `+` forms still gate bosses and
+  minibosses. Preserves what D-016 is actually protecting.
+- **Accept it** and price the base forms as pure chaff-clear, which means accepting that two of
+  your four CAUSTIC statuses are filler.
+- **Lower the cap and raise per-stack value** so ramp is fast enough to matter in two seconds.
+
+**I lean the first.** D-016 exists to keep boss fights authorable, and letting corrosion stack
+on an elite does not threaten that.
+
 ---
 
-## 4. Durations
+## 4. Durations — fixed by default, source-defined by exception
 
-Three kinds, and the schema needs to say which:
+### What other games actually do, and why it does not transfer directly
 
-| Kind | Meaning | Count |
-|---|---|---|
-| Fixed seconds | The status defines it | 10 |
-| `from_source` | The applying ability defines it | 22 |
-| `endless` | Until removed or the contract ends | 3 |
+The honest answer is that **most games put duration on the source**, but they get away with it
+for a reason Valrune does not share.
 
-Twelve statuses read "variable" in the spreadsheet, which means `from_source`. Two read
-"endless" and one "until removed/endless" — the same thing.
+| Game | Practice |
+|---|---|
+| **WoW** | Duration lives on the spell. Corruption is 14s, Immolate 18s |
+| **MOBAs** | Duration lives on the ability. Each slow is its own slow |
+| **Path of Exile** | Fixed base per ailment, modified by stats on the source |
+| **Tower defense** | Duration lives on the tower upgrade |
 
-**Every fixed duration is a clean multiple of `TICK` (0.2s)** after the stagger correction in
-§7.4. That is not cosmetic: a duration off the tick grid produces a final partial tick whose
-damage depends on floating-point drift, which breaks the determinism rule.
+**The catch: in all of those, each source applies its own private debuff.** WoW's Corruption
+and Immolate are two different debuffs that happen to both be damage over time. They never
+touch each other, so their durations can differ freely.
+
+**Valrune is the opposite case.** You have *one* `burn`, applied by roughly fifteen abilities,
+and every ability that reads "bonus damage to burning targets" reads the same family. Shared
+statuses are the case where source-defined durations break down, for three reasons:
+
+- **The refresh rule becomes incoherent.** Canon says reapplication never shortens duration. So
+  reapplying a 3s burn over an 8s burn has to take the max — which means the longest source
+  wins permanently and every other ability's duration silently stops mattering.
+- **Balance surface explodes.** Fifteen abilities each carrying their own burn duration is
+  fifteen numbers instead of one, and the Calibrator has to evaluate "applies burn" differently
+  per source.
+- **Nothing is learnable.** "Burn is five seconds" is a fact a player can hold. "Burn is
+  somewhere between three and eight depending on what applied it" is not.
+
+### The rule: riders are fixed, payloads come from the source
+
+Your spreadsheet already sorts this way, which is why the question is worth formalizing rather
+than deciding fresh. The discriminator is **whether the status is the ability's payload or a
+rider on it**:
+
+| | Definition | Duration | Examples |
+|---|---|---|---|
+| **Rider** | The ability does something else and the status comes along | **Fixed on the status** | burn, shock, corrosion, poison, slow, stagger, radiate |
+| **Payload** | The status *is* the ability; its duration is the design lever | **`from_source`** | ethereal, evasion, rime, gravity, ward, invisible, damage_immune, untargetable, maxhp_gain |
+
+"Become ethereal for 2 seconds" and "become ethereal for 5 seconds" are two different abilities
+at two different prices, and the duration is the entire difference between them. That is a
+payload. "Deals 40 plasma damage and applies burn" is a rider — the burn should be the same
+burn every time, or the phrase means nothing.
+
+**14 statuses fixed, 19 from source, 2 endless.**
+
+### Abilities that want a longer rider use a multiplier band
+
+Design space is preserved without handing out 89 free numbers. An ability may declare
+`duration_scale`, drawn from a three-value band rather than raw seconds:
+
+```
+duration_scale: 1.0 (default) | 1.5 | 2.0
+```
+
+Banded so the Calibrator can still compare, and so "long burn" is a recognizable design move
+rather than an arbitrary number. **The `+` form remains the preferred place to put a longer
+duration**, since it already carries the escalation.
+
+### Everything lands on the tick grid
+
+**Every fixed duration is a multiple of `TICK_FAST` (0.1s)** after the stagger correction in
+§7.4, and `duration_scale` may only produce values that stay on it — which is why the band is
+1.0/1.5/2.0 and not 1.3.
+
+Not cosmetic: an off-grid duration produces a final partial tick whose damage depends on
+floating-point drift, breaking determinism.
 
 ---
 
@@ -289,27 +396,61 @@ readings compile.
 by the whole progression tree, the status by a handful of abilities. "Ward charges" also
 reads naturally, and `barrier` was the alternative but risks confusion with field objects.
 
-### 7.3 `stasis` is a total lockout marked as a buff
+### 7.3 Three statuses are competing to be the lockout
 
-The spreadsheet has it as a buff, but the effect is:
+`paralyze`, `stasis`, and `gravity_plus` all stop a target from acting, and you are right that
+this is redundant rather than layered:
 
-> *cannot move other than forced movement; can't rotate, attack, use abilities; passives are
-> stopped/paused; you cannot return to ready position; all player controls no longer do
-> anything*
+| | Cannot move | Cannot act | Cannot rotate | Forced movement | Durations pause |
+|---|---|---|---|---|---|
+| `gravity` | ✓ | | | ✓ toward center | |
+| `gravity_plus` | ✓ | ✓ | | ✓ toward center | |
+| `paralyze` | ✓ | ✓ | | | |
+| `stasis` | ✓ | ✓ | ✓ | | ✓ |
 
-That is `paralyze` plus rotation lock plus passive suspension plus recall denial — **strictly
-worse than a status the same file marks as a debuff.**
+`gravity_plus` is `paralyze` with a pull bolted on. `stasis` is `paralyze` with two extra
+clauses. **Three statuses, one mechanic, escalating by accretion.**
 
-The rule that resolves it: **polarity describes the effect on the bearer, not the intent of
-whoever applied it.** Stasis harms its bearer, so it is a debuff with tag `control`.
+**Collapse to one family, and give `gravity` its own lane.**
 
-This matters beyond bookkeeping, because D-015 says buffs carry no immunity data. Left as a
-buff, **nothing in the game could ever be immune to stasis** — including bosses, which the
-`control` ladder is specifically built to protect.
+```
+paralyze       cannot move or act. Lands on minions.
+paralyze_plus  also cannot rotate; passives and status durations pause. Lands on elites.
+```
 
-One clause survives as a genuine benefit and should be kept explicit: **buff and debuff
-durations pause for the duration of stasis**, so it does not burn through your other statuses.
-That is a property of the status, not a reason to call it a buff.
+`stasis` is **deleted**, its two distinctive clauses becoming what makes `paralyze_plus` a `+`
+form. Nothing is lost — the duration-pause clause is genuinely useful and worth keeping, it
+just does not need its own status to live in.
+
+This resolves three things at once: the polarity error (stasis was marked a buff despite being
+strictly worse than a debuff), O-29 (paralyze had a `+` form's reach with no base form, and now
+has both), and O-32 (nobody could say who applied stasis, because nothing did).
+
+**`gravity_plus` stops denying actions.** Its escalation becomes strength of pull rather than a
+borrowed lockout, which leaves gravity as what VOID should own — **trajectory control, not
+paralysis.** Being dragged somewhere while still able to shoot is a different and more
+interesting problem for the player than being switched off.
+
+### 7.3b Gravity should affect projectiles, and that is the whole answer
+
+Your instinct here is the best idea in this batch. **Nothing else in the game manipulates
+projectiles in flight**, and it gives VOID an identity that no other element can copy:
+
+- **Defensively**, a gravity well bends incoming fire away from you.
+- **Offensively**, it curves your own shots around cover or into a cluster.
+- **It interacts with `homing` without duplicating it.** Homing corrects toward a target;
+  gravity displaces regardless of intent. Two forces summing is well-defined, and a homing shot
+  fighting a gravity well is a genuinely interesting moment.
+
+**It belongs to the field object, not the status.** The `gravity` status is "this entity is
+being pulled"; projectile bending is a property of the VOID field that does the pulling. Same
+field, two effects, one authored place. The push/pull composition in D-075 already almost
+expresses it.
+
+Cost is low: projectiles already carry position and velocity, so applying an acceleration to
+those inside a radius is a handful of lines and is fully deterministic. The performance
+question is how many gravity fields can exist at once, which is a wave-authoring limit rather
+than an engine problem.
 
 ### 7.4 `stagger` is shorter than a tick
 
@@ -399,25 +540,84 @@ I lean intentional — a single strong control effect is cleaner than padding th
 symmetry — but the pricing consequence has to be recorded either way, or the Calibrator will
 compare it against base forms and pass it.
 
-### 7.9 `damage_immune` bundles two separable mechanics
+### 7.9 The five defensive statuses are four flags, not five statuses
 
-> *cannot take damage or debuffs*
+`ethereal`, `damage_immune`, `untargetable`, and `invisible` overlap because they were each
+defined whole rather than composed. They separate cleanly on **four independent axes**:
 
-Debuff immunity is precisely what ImmunitySet does. Bundling it in means the framework has a
-hardcoded special case sitting next to the general mechanism that already handles it.
+| Status | Targetable | Collides | Takes damage | Visible |
+|---|---|---|---|---|
+| `ethereal` | yes | no, basic only | no, basic only | yes |
+| `ethereal_plus` | yes | no | no | yes |
+| `damage_immune` | yes | yes | **no** | yes |
+| `untargetable` | **no** | yes | yes | yes |
+| `invisible` | **no** | **no** | AoE breaks it | **no** |
 
-**Decompose it:** `damage_immune` grants damage immunity, and separately adds every debuff tag
-to the bearer's ImmunitySet. Same behavior, no special case, and it becomes possible to author
-"immune to damage but still debuffable" — which is a boss phase somebody will eventually want.
+Defining the flags and letting statuses set them removes the overlap without removing any of
+the statuses, because **each one occupies a genuinely distinct cell.**
 
-### 7.10 `invisible` restates `untargetable`
+**The distinction that makes `damage_immune` worth keeping: ethereal *misses*, damage immunity
+*lands for zero*.** An attack that misses applies nothing — no burn, no corrosion, no on-hit
+rider. An attack that lands for zero still applies everything else. That is a real difference
+and it is exactly the boss phase you would want: *you cannot hurt it yet, but you can stack
+corrosion for when the shield drops.*
 
-`invisible` is `untargetable` plus no collision plus not being drawn. Rather than duplicating
-the targeting rules — including that careful clause about launched abilities flying straight
-instead of homing — **`invisible` should grant `untargetable`** and add only what is genuinely
-its own.
+Which means **`damage_immune` should stop blocking debuffs.** The spreadsheet reads "cannot take
+damage or debuffs", and dropping the second clause is what makes it distinct from `ethereal+`
+instead of a duplicate of it. It also simplifies D-091 — no ImmunitySet manipulation, just
+`damageable: false`.
 
-Statuses granting statuses is a capability the schema needs anyway; this is a good first use.
+**`untargetable` earns its place as the anti-homing status**, which is what you built it for.
+It breaks target acquisition without granting any damage protection, so skillshots and AoE
+still land. Now that `homing` is a rank line every player buys, an untargetable baddie is real
+counterplay rather than a curiosity — and it is a natural GAMMA signature.
+
+**`invisible` grants `untargetable`** rather than restating the targeting rules, including that
+careful clause about launched abilities flying straight instead of homing. It adds only what is
+its own: not being drawn, no collision, and AoE breaking it.
+
+So yes — **invisibility breaks homing**, via `untargetable`, and it does so without you having
+to give any baddie homing for it to matter. It breaks *yours*.
+
+### 7.10 `ward` is worth sixty times more against a boss than a swarm
+
+Charge-based hit negation has one structural flaw: **a charge blocks a hit regardless of the
+hit's size**, so its value is set entirely by the largest thing you can spend it on.
+
+| Absorbing | Charges | Damage blocked |
+|---|---|---|
+| Chaff hits at 3 damage | 3 | 9 |
+| Boss special at 200 damage | 3 | 600 |
+
+**And piercing makes it worse.** D-081 turns one gun-shot into five hits, so in a 200-baddie
+swarm ward evaporates in a fraction of a second. It is simultaneously useless where you are
+being chipped to death and dominant where you are being hit once every five seconds.
+
+Three fixes, and they are not equivalent:
+
+- **Make it an HP pool.** Predictable, but that is the `shield` rank line already — and the
+  whole reason ward got renamed in §7.2 was that the two are different mechanics.
+- **Scope it to basic attacks**, mirroring evasion's D-017 fix. Consistent, but `evasion` and
+  `ethereal` already cover basic attacks, so ward would become the third answer to a question
+  already answered twice.
+- **Give the charge an internal cooldown.** ← recommended
+
+```
+ward: N charges. Consuming one puts ward on a 1.0s internal cooldown,
+      during which damage passes normally.
+```
+
+**This fixes both ends with one number.** In a swarm ward blocks one hit per second rather than
+evaporating, so it is a real if modest defensive window. Against a boss it still blocks the big
+telegraphed hits, which is the job no other defensive status can do — evasion cannot touch
+specials by D-017, and ethereal+ only helps if you timed it.
+
+It also **resolves O-31 cleanly**: a five-hit pierced gun-shot consumes one charge, not five,
+because the cooldown starts at the first hit.
+
+The "certain abilities can strip a ward" idea is good and stays available — it is a natural
+elite mechanic — but it is additional scope rather than a fix, so it should wait until ward is
+in and felt.
 
 ### 7.11 Every description is written in second person
 
@@ -450,7 +650,10 @@ is stasis's control-lockout clause, which genuinely has no baddie-side meaning.
 | # | Question | Blocks |
 |---|---|---|
 | 1 | **`radiate`'s band shift** — cap, percentage, or flat bonus? §7.6. Leaning flat | Phase 2 |
-| 2 | **`paralyze`** — intentionally a `+`-form-strength singleton, or does it want a base form? §7.8 | Phase 2 |
+| 2 | **Stacking versus the threat ladder** — base `corrosion` and `poison` can only land on targets that die before stacks accumulate. Let base stacking debuffs reach elites? §3 | Phase 2 |
 | 3 | **Is `rime`'s recoil a basic attack?** If it is, it can be evaded, and two rimed entities shooting each other need a recursion guard | Phase 2 |
-| 4 | **Does `ward` block a whole gun-shot or one pierced hit?** Piercing (D-081) makes one gun-shot into five hits. Per hit, ward is five times weaker than authored | Phase 2 |
-| 5 | **`stasis` — who applies it, and to whom?** The description reads as a boss mechanic on the player, but nothing in the ability set produces it yet | Phase 2 |
+| 4 | **Gravity affecting projectiles** is new scope, not a correction — worth confirming before it lands in the schema. §7.3b | Phase 2 |
+| 5 | **Does anything strip a `ward`?** Good elite mechanic, deliberately deferred until ward is in and felt | M1 |
+
+Resolved this pass: O-29 (`paralyze` gains a base form), O-31 (ward's internal cooldown),
+O-32 (`stasis` deleted).
